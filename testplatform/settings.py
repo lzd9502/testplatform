@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'rest_framework_jwt',
     'testenvconfig',
     'dataconfigurator',
+    'tester'
 ]
 
 AUTH_USER_MODEL = 'testenvconfig.User'
