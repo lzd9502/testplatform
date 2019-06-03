@@ -20,11 +20,13 @@ from rest_framework_jwt.views import obtain_jwt_token
 from testenvconfig import views
 
 route=DefaultRouter()
-route.register('user/info', views.UserinfoViewset,base_name='userinfo')
+route.register('user/info', views.UserInfoViewset,basename='userinfo')
+route.register('user/project',views.UserProjectViewset,basename='userproject')
+route.register('project',views.ProjectViewset,)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include(route.urls)),
-    # path('user/info/', views.UserinfoViewset),
+    # path('user/info/', views.UserProjectViewset),
     # 此处配置jwt认证接口
     path('login/', obtain_jwt_token),
 ]

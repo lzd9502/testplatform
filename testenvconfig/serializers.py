@@ -16,8 +16,8 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class U2PSerializer(serializers.ModelSerializer):
-    User = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    Project=ProjectSerializer()
+    # User = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     class Meta:
         model = U2P
         validators = [UniqueTogetherValidator(
@@ -28,9 +28,3 @@ class U2PSerializer(serializers.ModelSerializer):
         fields = ('id', 'User', 'Project')
 
 
-class U2PDetailSerializer(serializers.ModelSerializer):
-    Project = ProjectSerializer()
-
-    class Meta:
-        model = U2P
-        fields = ('id', 'Project')

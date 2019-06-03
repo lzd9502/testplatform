@@ -2,6 +2,7 @@ import time
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+
 # Create your models here.
 class User(AbstractUser):
     username = models.CharField(max_length=8, verbose_name='用户名', unique=True, null=True)
@@ -22,7 +23,7 @@ class User(AbstractUser):
 
 
 class Project(models.Model):
-    #TODO:members is writeonly,fix it before next migrate
+    # TODO:members is writeonly,fix it before next migrate
     name = models.CharField(max_length=20, verbose_name='项目', )
     disabled = models.BooleanField(default=True, verbose_name='启用状态')
     createtime = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
@@ -33,7 +34,7 @@ class Project(models.Model):
 
 
 class U2P(models.Model):
-    #TODO:add uniquecode('User','Project')
+    # TODO:add uniquecode('User','Project')
     User = models.ForeignKey(User, related_name='User', on_delete=models.CASCADE)
     Project = models.ForeignKey(Project, related_name='Project', on_delete=models.CASCADE)
     createtime = models.DateTimeField(auto_now_add=True)
