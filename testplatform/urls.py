@@ -17,12 +17,14 @@ from django.contrib import admin
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
 from rest_framework_jwt.views import obtain_jwt_token
-from testenvconfig import views
+from testenvconfig import views as testenvconfigviews
+from tester import views as testerviews
 
 route=DefaultRouter()
-route.register('user/info', views.UserInfoViewset,basename='userinfo')
-route.register('user/project',views.UserProjectViewset,basename='userproject')
-route.register('project',views.ProjectViewset,)
+route.register('user/info', testenvconfigviews.UserInfoViewset,basename='userinfo')
+route.register('user/project',testenvconfigviews.UserProjectViewset,basename='userproject')
+route.register('project',testenvconfigviews.ProjectViewset,)
+route.register('route',testerviews.RouteViewset)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include(route.urls)),
