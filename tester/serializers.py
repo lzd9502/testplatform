@@ -1,17 +1,24 @@
 from rest_framework import serializers
-from drf_writable_nested import WritableNestedModelSerializer
+from drf_writable_nested import WritableNestedModelSerializer,UniqueFieldsMixin,NestedUpdateMixin,NestedCreateMixin
 from .models import Route,RouteParams,RouteResponseGroup,ResponseGroupParam
 from testenvconfig.models import Project
 
 class RouteParamSerializer(serializers.ModelSerializer):
     class Meta:
         model=RouteParams
-        exclude=['route']
+        fields=('id','param','datatype')
+class RouteListSerializer(serializers.ModelSerializer):
+    myrouteparams=RouteParamSerializer(many=True,read_only=True)
+    class Meta:
+        model=Route
+        # fields='__all__'
+        exclude=['project']
 class RouteSerializer(WritableNestedModelSerializer):
     myrouteparams=RouteParamSerializer(many=True)
     class Meta:
         model=Route
-        exclude=['project']
+        # exclude=['project']
+        fields='__all__'
     # def create(self, validated_data):
     #     myrouteparams_data=validated_data.pop('myrouteparams')
     #     route=Route.objects.create(**validated_data)
