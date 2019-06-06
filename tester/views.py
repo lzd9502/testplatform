@@ -3,13 +3,14 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser,MultiPartParser,FormParser
 from .models import Route
 from testenvconfig.models import Project
-from .serializers import RouteSerializer, RouteListSerializer, ProjectRouteSerializer
+from .serializers import RouteSerializer, RouteListSerializer
 
 
 # Create your views here.
 class RouteViewset(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     parser_classes = (JSONParser,FormParser,MultiPartParser)
+    lookup_field = 'project'
 
     # serializer_class = RouteSerializer
     def get_serializer_class(self):
