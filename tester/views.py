@@ -1,6 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser,MultiPartParser,FormParser
+from rest_framework import filters
 from .models import Route
 from testenvconfig.models import Project
 from .serializers import RouteSerializer, RouteListSerializer
@@ -10,7 +11,9 @@ from .serializers import RouteSerializer, RouteListSerializer
 class RouteViewset(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     parser_classes = (JSONParser,FormParser,MultiPartParser)
-    lookup_field = 'project'
+    filter_backends = (filters.SearchFilter,)
+    filterset_fields = ('project',)
+    search_fields=('name',)
 
     # serializer_class = RouteSerializer
     def get_serializer_class(self):

@@ -10,10 +10,10 @@ JSONHeaders = {}
 JSONHeaders['Content-Type'] = 'application/json'
 JSONHeaders['Authorization'] = 'MyToken ' + res['token']
 # 获取route
-# print('获取项目下全部route:')
- # routeList = requests.get(url + 'route', headers=headers, params={'project': 1}).json()
+print('获取项目下全部route:')
+routeList = requests.get(url + 'route', headers=headers, params={'project': 1,'search':'first'}).json()
 # routeList = requests.get(url + 'route/', headers=headers).json()
-# print(routeList)
+print(routeList)
  # 写入route
 # print('写入route：')
 # datas = {
