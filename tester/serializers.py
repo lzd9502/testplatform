@@ -18,7 +18,7 @@ class ResponseParamsSerializer(serializers.ModelSerializer):
         fields = ('pk', 'param')
 
 
-class RouteResponseSerializer(WritableNestedModelSerializer):
+class RouteResponseSerializer(serializers.ModelSerializer):
     mygroupparams = ResponseParamsSerializer(many=True)
 
     class Meta:
@@ -26,7 +26,12 @@ class RouteResponseSerializer(WritableNestedModelSerializer):
         # fields = '__all__'
         exclude=['route']
         validators = [UniqueTogetherValidator(queryset=RouteResponseGroup.objects.all(),fields=('route','name'),message='同一路由下响应组名称不能相同')]
-
+    def create(self, validated_data):
+        mygroupparams_data=validated_data.pop('mygroupparams')
+        group=RouteResponseGroup.objects.create(**validated_data)
+        for mygroupparam_data in mygroupparams_data:
+            ResponseGroupParam.objects.create(Group=group,**mygroupparam_data)
+        return group
 
 class RouteListSerializer(serializers.ModelSerializer):
     myrouteparams = RouteParamSerializer(many=True, read_only=True)
@@ -37,7 +42,7 @@ class RouteListSerializer(serializers.ModelSerializer):
         exclude = ['project']
 
 
-class RouteSerializer(WritableNestedModelSerializer):
+class RouteSerializer(serializers.ModelSerializer):
     myrouteparams = RouteParamSerializer(many=True)
     myresponsegroup = RouteResponseSerializer(many=True)
 
@@ -46,8 +51,13 @@ class RouteSerializer(WritableNestedModelSerializer):
         fields = '__all__'
         validators = [
             UniqueTogetherValidator(queryset=Route.objects.all(), fields=('name', 'project'), message='该项目下已有同名路由！')]
-    # def create(self, validated_data):
-    #     myrouteparams_data=validated_data.pop('myrouteparams')
-    #     route=Route.objects.create(**validated_data)
-    #     RouteParams.objects.create(route=route.id,**myrouteparams_data)
-    #     return route
+
+    def create(self, validated_data):
+        myrouteparams_data=validated_data.pop('myrouteparams')
+        myresponsegroup_datas=validated_data.pop('myresponsegroup')
+        route=Route.objects.create(**validated_data)
+        for myrouteparam_data in myrouteparams_data:
+            RouteParams.objects.create(route=route,**myrouteparam_data)
+        for myresponsegroup_data in myresponsegroup_datas:
+            RouteResponseGroup.objects.create(route=route,**myresponsegroup_data)
+        return route
