@@ -47,7 +47,7 @@ class Case(models.Model):
     '''
     用例信息表
     '''
-    case_method_choice = [('GET','get'), ('POST','post'), ('PUT','put'), ('DELETE','delete')]
+    case_method_choice = [('GET', 'get'), ('POST', 'post'), ('PUT', 'put'), ('DELETE', 'delete')]
     name = models.CharField(max_length=16, verbose_name='用例名')
     req_method = models.CharField(max_length=6, choices=case_method_choice, default=case_method_choice[0])
     createtime = models.DateTimeField(auto_now_add=True)

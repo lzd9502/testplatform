@@ -18,14 +18,14 @@ print(routeList)
 # 写入route
 print('写入route：')
 datas = {
-    'name': 'TestRouterWGroup', 'route': 'xxx/yyy/zzz',
+    'name': 'TestGroup2', 'route': 'xxx/yyy/zzz',
     'project': 1,
     'myrouteparams': [
         {'param': 'apitestparam1', 'datatype': 1},
         {'param': 'apitestparam2', 'datatype': 1}],
     'myresponsegroup': [
-        {'name': 'firstgroup', 'mygroupparams': [{'param': '1group1param'}, {'param': '1group2param'}]}, ]
-    # 'myresponsegroup': [],
+        {'name': 'firstgroup',  'mygroupparams': [{'param': '1group1param'}, {'param': '1group2param'}]}, ]
+    # 'myresponsegroup': [{'name': 'firstgroup'},{'name':'secondgroup'}],
 }
 setroute = requests.post(url + 'route/', headers=JSONHeaders, json=datas).json()
 print(setroute)
