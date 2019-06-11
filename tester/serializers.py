@@ -32,6 +32,14 @@ class RouteResponseSerializer(serializers.ModelSerializer):
         for mygroupparam_data in mygroupparams_data:
             ResponseGroupParam.objects.create(Group=group,**mygroupparam_data)
         return group
+# class RouteResponseSerializer(WritableNestedModelSerializer):
+#     mygroupparams = ResponseParamsSerializer(many=True)
+#
+#     class Meta:
+#         model = RouteResponseGroup
+#         fields = '__all__'
+#         # exclude=['route']
+#         validators = [UniqueTogetherValidator(queryset=RouteResponseGroup.objects.all(),fields=('route','name'),message='同一路由下响应组名称不能相同')]
 
 class RouteListSerializer(serializers.ModelSerializer):
     myrouteparams = RouteParamSerializer(many=True, read_only=True)
@@ -61,3 +69,12 @@ class RouteSerializer(serializers.ModelSerializer):
         for myresponsegroup_data in myresponsegroup_datas:
             RouteResponseGroup.objects.create(route=route,**myresponsegroup_data)
         return route
+# class RouteSerializer(WritableNestedModelSerializer):
+#     myrouteparams = RouteParamSerializer(many=True)
+#     myresponsegroup = RouteResponseSerializer(many=True)
+#
+#     class Meta:
+#         model = Route
+#         fields = '__all__'
+#         validators = [
+#             UniqueTogetherValidator(queryset=Route.objects.all(), fields=('name', 'project'), message='该项目下已有同名路由！')]
