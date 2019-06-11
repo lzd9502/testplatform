@@ -38,7 +38,6 @@ class RouteResponseSerializer(WritableNestedModelSerializer):
     class Meta:
         model = RouteResponseGroup
         fields = ('id','name','mygroupparams')
-        # exclude=['route']
         # validators = [UniqueTogetherValidator(queryset=RouteResponseGroup.objects.all(),fields=('route','name'),message='同一路由下响应组名称不能相同')]
 
 class RouteListSerializer(serializers.ModelSerializer):
@@ -77,4 +76,6 @@ class RouteSerializer(WritableNestedModelSerializer):
         model = Route
         fields = '__all__'
         validators = [
-            UniqueTogetherValidator(queryset=Route.objects.all(), fields=('name', 'project'), message='该项目下已有同名路由！')]
+            UniqueTogetherValidator(queryset=Route.objects.all(), fields=('name', 'project'), message='该项目下已有同名路由！'),
+            UniqueTogetherValidator(queryset=RouteResponseGroup.objects.all(), fields=('route', 'name'),
+                                    message='同一路由下响应组名称不能相同')]
