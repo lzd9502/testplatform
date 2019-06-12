@@ -21,7 +21,7 @@ class RouteParams(models.Model):
     '''
     路由参数表
     '''
-    type_choice = [(0, 'header'), (1, 'param'), (2, 'body'), (3, 'url_param')]
+    type_choice = ((0, 'header'), (1, 'param'), (2, 'body'), (3, 'url_param'))
     route = models.ForeignKey(Route, on_delete=models.CASCADE, verbose_name='所属路由', related_name='myrouteparams')
     param = models.CharField(max_length=16, verbose_name='参数名')
     datatype = models.CharField(max_length=1, choices=type_choice, default=1, verbose_name='参数形式')
@@ -47,7 +47,7 @@ class Case(models.Model):
     '''
     用例信息表
     '''
-    case_method_choice = [('GET', 'get'), ('POST', 'post'), ('PUT', 'put'), ('DELETE', 'delete')]
+    case_method_choice = (('GET', 'get'), ('POST', 'post'), ('PUT', 'put'), ('DELETE', 'delete'))
     name = models.CharField(max_length=16, verbose_name='用例名')
     req_method = models.CharField(max_length=6, choices=case_method_choice, default=case_method_choice[0])
     createtime = models.DateTimeField(auto_now_add=True)
@@ -62,11 +62,11 @@ class Case_Source_RouteParam(models.Model):
     用例-数据源-请求参数三方映射表
     '''
     case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='myCSRP')
-    param = models.ForeignKey(RouteParams, null=True, on_delete=models.SET_NULL)
-    value = models.ForeignKey(SourceResult, null=True, on_delete=models.SET_NULL)
+    route_param = models.ForeignKey(RouteParams, null=True, on_delete=models.SET_NULL)
+    data_source = models.ForeignKey(SourceResult, null=True, on_delete=models.SET_NULL)
 
     class Meta:
-        unique_together = ('case', 'param', 'value')
+        unique_together = ('case', 'route_param', 'data_source')
 
 
 class Case_Source_RouteResponse(models.Model):
@@ -74,10 +74,10 @@ class Case_Source_RouteResponse(models.Model):
     用例-数据源-响应参数表
     '''
     case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='myCSRR')
-    param = models.ForeignKey(ResponseGroupParam, null=True, on_delete=models.SET_NULL)
-    value = models.ForeignKey(SourceResult, null=True, on_delete=models.SET_NULL)
+    response = models.ForeignKey(ResponseGroupParam, null=True, on_delete=models.SET_NULL)
+    data_source = models.ForeignKey(SourceResult, null=True, on_delete=models.SET_NULL)
 
     class Meta:
-        unique_together = ('case', 'param', 'value')
+        unique_together = ('case', 'response', 'data_source')
 # class result(models.Model):
 #     pass

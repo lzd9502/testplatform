@@ -19,12 +19,14 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_jwt.views import obtain_jwt_token
 from testenvconfig import views as testenvconfigviews
 from tester import views as testerviews
+from dataconfigurator import views as dataconfigurator
 
 route=DefaultRouter()
 route.register('user/info', testenvconfigviews.UserInfoViewset,basename='userinfo')
 route.register('user/project',testenvconfigviews.UserProjectViewset,basename='userproject')
 route.register('project',testenvconfigviews.ProjectViewset,)
 route.register('route',testerviews.RouteViewset)
+route.register('datasource',dataconfigurator.DataSourceViewset,)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include(route.urls)),

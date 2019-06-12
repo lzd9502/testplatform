@@ -38,6 +38,7 @@ class RouteResponseSerializer(WritableNestedModelSerializer):
     class Meta:
         model = RouteResponseGroup
         fields = ('id','name','mygroupparams')
+        #todo:这里的验证怎么处理，联合唯一，使用WritableNested序列化器无法通过valid
         # validators = [UniqueTogetherValidator(queryset=RouteResponseGroup.objects.all(),fields=('route','name'),message='同一路由下响应组名称不能相同')]
 
 class RouteListSerializer(serializers.ModelSerializer):
