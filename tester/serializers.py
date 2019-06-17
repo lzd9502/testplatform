@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from drf_writable_nested import WritableNestedModelSerializer, UniqueFieldsMixin, NestedUpdateMixin, NestedCreateMixin
 
-from .models import Route, RouteParams, RouteResponseGroup, ResponseGroupParam
+from .models import Route, RouteParams, RouteResponseGroup, ResponseGroupParam, Case
 from testenvconfig.models import Project
 
 
@@ -16,6 +16,12 @@ class ResponseParamsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResponseGroupParam
         fields = ('id', 'param')
+
+
+class ResponseParams4CaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResponseGroupParam
+        fields = '__all__'
 
 
 # class RouteResponseSerializer(serializers.ModelSerializer):
@@ -37,9 +43,10 @@ class RouteResponseSerializer(WritableNestedModelSerializer):
 
     class Meta:
         model = RouteResponseGroup
-        fields = ('id','name','mygroupparams')
-        #todo:这里的验证怎么处理，联合唯一，使用WritableNested序列化器无法通过valid
+        fields = ('id', 'name', 'mygroupparams')
+        # todo:这里的验证怎么处理，联合唯一，使用WritableNested序列化器无法通过valid
         # validators = [UniqueTogetherValidator(queryset=RouteResponseGroup.objects.all(),fields=('route','name'),message='同一路由下响应组名称不能相同')]
+
 
 class RouteListSerializer(serializers.ModelSerializer):
     myrouteparams = RouteParamSerializer(many=True, read_only=True)
@@ -80,3 +87,14 @@ class RouteSerializer(WritableNestedModelSerializer):
             UniqueTogetherValidator(queryset=Route.objects.all(), fields=('name', 'project'), message='该项目下已有同名路由！'),
             UniqueTogetherValidator(queryset=RouteResponseGroup.objects.all(), fields=('route', 'name'),
                                     message='同一路由下响应组名称不能相同')]
+
+
+# Case
+
+class CaseSerializer(WritableNestedModelSerializer):
+    myCSRP = RouteParamSerializer(many=True)
+    myCSRR = ResponseParams4CaseSerializer(many=True)
+
+    class Meta:
+        model = Case
+        fields='__all__'

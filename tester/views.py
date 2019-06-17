@@ -3,9 +3,9 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser,MultiPartParser,FormParser
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Route
+from .models import Route,Case
 from testenvconfig.models import Project
-from .serializers import RouteSerializer, RouteListSerializer
+from .serializers import RouteSerializer, RouteListSerializer,CaseSerializer
 from .pagination import PagePagination
 
 
@@ -44,3 +44,7 @@ class RouteViewset(viewsets.ModelViewSet):
 #     print(self.request.query_params)
 #     queryset=Project.objects.filter(self.request.query_params)
 #     return queryset
+class CaseViewset(viewsets.ModelViewSet):
+    queryset = Case.objects.all()
+    serializer_class = CaseSerializer
+    filter_backends = (DjangoFilterBackend,filters.SearchFilter,filters.OrderingFilter)
