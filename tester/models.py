@@ -50,6 +50,7 @@ class Case(models.Model):
     case_method_choice = (('GET', 'get'), ('POST', 'post'), ('PUT', 'put'), ('DELETE', 'delete'))
     name = models.CharField(max_length=16, verbose_name='用例名')
     req_method = models.CharField(max_length=6, choices=case_method_choice, default=case_method_choice[0])
+    project=models.ForeignKey(Project,on_delete=models.CASCADE,related_name='mycase')
     createtime = models.DateTimeField(auto_now_add=True)
     createby = models.ForeignKey(user, null=True, on_delete=models.SET_NULL, related_name='casecreater')
     updatetime = models.DateTimeField(auto_now=True)

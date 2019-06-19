@@ -4,6 +4,7 @@ from drf_writable_nested import WritableNestedModelSerializer, UniqueFieldsMixin
 
 from .models import Route, RouteParams, RouteResponseGroup, ResponseGroupParam, Case
 from testenvconfig.models import Project
+from testenvconfig.serializers import UserSerializer
 
 
 class RouteParamSerializer(serializers.ModelSerializer):
@@ -90,10 +91,17 @@ class RouteSerializer(WritableNestedModelSerializer):
 
 
 # Case
-
-class CaseSerializer(WritableNestedModelSerializer):
+class CaseListSerializer(serializers.ModelSerializer):
     myCSRP = RouteParamSerializer(many=True)
     myCSRR = ResponseParams4CaseSerializer(many=True)
+    createby=UserSerializer()
+    updateby=UserSerializer()
+    class Meta:
+        model=Case
+        exclude=['project',]
+class CaseSerializer(WritableNestedModelSerializer):
+    # myCSRP = RouteParamSerializer(many=True)
+    # myCSRR = ResponseParams4CaseSerializer(many=True)
 
     class Meta:
         model = Case

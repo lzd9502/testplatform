@@ -1,24 +1,25 @@
-from rest_framework import viewsets, status
-from rest_framework.response import Response
-from rest_framework.parsers import JSONParser,MultiPartParser,FormParser
-from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Route,Case
-from testenvconfig.models import Project
-from .serializers import RouteSerializer, RouteListSerializer,CaseSerializer
+from rest_framework import filters
+from rest_framework import viewsets, status
+from rest_framework.parsers import JSONParser
+from rest_framework.response import Response
+
+from .models import Route, Case
 from .pagination import PagePagination
+from .serializers import RouteSerializer, RouteListSerializer, CaseSerializer, CaseListSerializer
 
 
 # Create your views here.
 class RouteViewset(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     parser_classes = (JSONParser,)
-    filter_backends = (DjangoFilterBackend,filters.SearchFilter,filters.OrderingFilter)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
     filterset_fields = ('project',)
-    search_fields=('name',)
-    ordering_fields=('name','route')
-    ordering=('id')
+    search_fields = ('name',)
+    ordering_fields = ('name', 'route')
+    ordering = ('id')
     pagination_class = PagePagination
+
     # serializer_class = RouteSerializer
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
@@ -26,25 +27,18 @@ class RouteViewset(viewsets.ModelViewSet):
         else:
             return RouteSerializer
 
-    def create(self, request, *args, **kwargs):
-        print(request.data)
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     # def get_queryset(self):
     #     queryset = self.queryset.filter(**self.request.query_params)
     #     return queryset
-# class RouteViewset(viewsets.ModelViewSet):
-#     queryset =Project.objects.all()
-#     serializer_class = ProjectRouteSerializer
-#     lookup_field = 'id'
-# def get_queryset(self):
-#     print(self.request.query_params)
-#     queryset=Project.objects.filter(self.request.query_params)
-#     return queryset
+
+
 class CaseViewset(viewsets.ModelViewSet):
     queryset = Case.objects.all()
-    serializer_class = CaseSerializer
-    filter_backends = (DjangoFilterBackend,filters.SearchFilter,filters.OrderingFilter)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    search_fields = ('name')
+    pagenation_class = PagePagination
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return CaseListSerializer
+        else:
+            return CaseSerializer
