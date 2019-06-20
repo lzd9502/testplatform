@@ -1,8 +1,10 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
-from drf_writable_nested import WritableNestedModelSerializer, UniqueFieldsMixin, NestedUpdateMixin, NestedCreateMixin
+from drf_writable_nested import WritableNestedModelSerializer
 
-from .models import Route, RouteParams, RouteResponseGroup, ResponseGroupParam, Case
+from dataconfigurator.serializers import SourceResultSerializer
+from .models import Route, RouteParams, RouteResponseGroup, ResponseGroupParam, Case, Case_Source_RouteParam, \
+    Case_Source_RouteResponse
 from testenvconfig.models import Project
 from testenvconfig.serializers import UserSerializer
 
@@ -90,19 +92,42 @@ class RouteSerializer(WritableNestedModelSerializer):
                                     message='同一路由下响应组名称不能相同')]
 
 
+class CSRPSerializer(WritableNestedModelSerializer):
+    route_param = RouteParamSerializer()
+    data_source = SourceResultSerializer()
+
+    class Meta:
+        model = Case_Source_RouteParam
+        fields = ('id', 'route_param', 'data_source',)
+
+
+class CSRRSerializer(WritableNestedModelSerializer):
+    response = ResponseParams4CaseSerializer()
+    data_source = SourceResultSerializer()
+
+    class Meta:
+        model = Case_Source_RouteResponse
+        fields = ('id', 'response', 'data_source',)
+
+
 # Case
 class CaseListSerializer(serializers.ModelSerializer):
-    myCSRP = RouteParamSerializer(many=True)
-    myCSRR = ResponseParams4CaseSerializer(many=True)
-    createby=UserSerializer()
-    updateby=UserSerializer()
+    myCSRP = CSRPSerializer(many=True)
+    myCSRR = CSRRSerializer(many=True)
+    createby = UserSerializer()
+    updateby = UserSerializer()
+
     class Meta:
-        model=Case
-        exclude=['project',]
+        model = Case
+        exclude = ['project', ]
+
+
 class CaseSerializer(WritableNestedModelSerializer):
-    # myCSRP = RouteParamSerializer(many=True)
+    myCSRP = CSRPSerializer(many=True)
+    myCSRR = CSRRSerializer(many=True)
+
     # myCSRR = ResponseParams4CaseSerializer(many=True)
 
     class Meta:
         model = Case
-        fields='__all__'
+        fields = '__all__'

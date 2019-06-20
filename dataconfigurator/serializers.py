@@ -6,7 +6,7 @@ from .models import DataSource,SourceResult
 class SourceResultSerializer(serializers.ModelSerializer):
     class Meta:
         model=SourceResult
-        fields=('name',)
+        fields=('id','name',)
 
 
 class DataSourceSerializer(WritableNestedModelSerializer):

@@ -36,7 +36,9 @@ class CaseViewset(viewsets.ModelViewSet):
     queryset = Case.objects.all()
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
     search_fields = ('name')
+    filterset_fields=('project',)
     pagenation_class = PagePagination
+
     def get_serializer_class(self):
         if self.action == 'list':
             return CaseListSerializer
