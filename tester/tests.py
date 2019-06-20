@@ -33,7 +33,7 @@ JSONHeaders['Authorization'] = 'MyToken ' + res['token']
 
 #查询Case
 print('查询Case:')
-pcase=requests.get(url=url+'case',headers=headers).json()
+pcase=requests.get(url=url+'case',headers=headers,params={'project':1}).json()
 print(pcase)
 #写入case
 print('写入case:')
