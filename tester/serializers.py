@@ -91,8 +91,13 @@ class RouteSerializer(WritableNestedModelSerializer):
             UniqueTogetherValidator(queryset=RouteResponseGroup.objects.all(), fields=('route', 'name'),
                                     message='同一路由下响应组名称不能相同')]
 
+#--------------------------------------------------------------------#
 
-class CSRPSerializer(WritableNestedModelSerializer):
+class CSRPSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Case_Source_RouteParam
+        fields = ('id', 'route_param', 'data_source',)
+class CSRPListSerializer(serializers.ModelSerializer):
     route_param = RouteParamSerializer()
     data_source = SourceResultSerializer()
 
@@ -100,8 +105,12 @@ class CSRPSerializer(WritableNestedModelSerializer):
         model = Case_Source_RouteParam
         fields = ('id', 'route_param', 'data_source',)
 
-
 class CSRRSerializer(WritableNestedModelSerializer):
+
+    class Meta:
+        model = Case_Source_RouteResponse
+        fields = ('id', 'response', 'data_source',)
+class CSRRListSerializer(WritableNestedModelSerializer):
     response = ResponseParams4CaseSerializer()
     data_source = SourceResultSerializer()
 
@@ -112,8 +121,8 @@ class CSRRSerializer(WritableNestedModelSerializer):
 
 # Case
 class CaseListSerializer(serializers.ModelSerializer):
-    myCSRP = CSRPSerializer(many=True)
-    myCSRR = CSRRSerializer(many=True)
+    myCSRP = CSRPListSerializer(many=True)
+    myCSRR = CSRRListSerializer(many=True)
     createby = UserSerializer()
     updateby = UserSerializer()
 

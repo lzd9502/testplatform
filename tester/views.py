@@ -35,7 +35,7 @@ class RouteViewset(viewsets.ModelViewSet):
 class CaseViewset(viewsets.ModelViewSet):
     queryset = Case.objects.all()
     filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
-    search_fields = ('name')
+    search_fields = ('name',)
     filterset_fields=('project',)
     pagenation_class = PagePagination
 

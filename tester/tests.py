@@ -33,11 +33,13 @@ JSONHeaders['Authorization'] = 'MyToken ' + res['token']
 
 #查询Case
 print('查询Case:')
-pcase=requests.get(url=url+'case',headers=headers,params={'project':1}).json()
+pcase=requests.get(url=url+'case',headers=headers,params={'project':1,'search':'apicase1'}).json()
 print(pcase)
 #写入case
 print('写入case:')
-# casedata={'name':'apicase1','req_method':'POST','project':1,'myCSRP':[1,2],'myCSRR':}
+casedata={'name':'apicase1','req_method':'POST','project':1,'myCSRP':[{'route_param':1,'data_source':1}],'myCSRR':[{'response':1,'data_source':1}]}
+setcase=requests.post(url=url+'case/',headers=JSONHeaders,json=casedata).json()
+print(setcase)
 # sql注入相关
 # URL='http://www.zszywx.com/CMSInfo/WebFile/Web_2/html/news_list.html'
 # URL2='http://192.168.60.114:6005/CMSInfo/WebFile/Web_2/html/news_list.html'
