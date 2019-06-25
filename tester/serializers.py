@@ -9,10 +9,18 @@ from testenvconfig.models import Project
 from testenvconfig.serializers import UserSerializer
 
 
+# ================================================================
+# -------------------------------Route----------------------------
+# ================================================================
 class RouteParamSerializer(serializers.ModelSerializer):
+    data_type = serializers.SerializerMethodField()
+
+    def get_data_type(self,obj):
+        return obj.get_data_type_display()
+
     class Meta:
         model = RouteParams
-        fields = ('id', 'param', 'datatype')
+        fields = ('id', 'param', 'data_type')
 
 
 class ResponseParamsSerializer(serializers.ModelSerializer):
@@ -91,12 +99,18 @@ class RouteSerializer(WritableNestedModelSerializer):
             UniqueTogetherValidator(queryset=RouteResponseGroup.objects.all(), fields=('route', 'name'),
                                     message='同一路由下响应组名称不能相同')]
 
-#--------------------------------------------------------------------#
+
+# ================================================================
+# -------------------------------Case-----------------------------
+# ================================================================
+
 
 class CSRPSerializer(serializers.ModelSerializer):
     class Meta:
         model = Case_Source_RouteParam
         fields = ('id', 'route_param', 'data_source',)
+
+
 class CSRPListSerializer(serializers.ModelSerializer):
     route_param = RouteParamSerializer()
     data_source = SourceResultSerializer()
@@ -105,11 +119,13 @@ class CSRPListSerializer(serializers.ModelSerializer):
         model = Case_Source_RouteParam
         fields = ('id', 'route_param', 'data_source',)
 
-class CSRRSerializer(WritableNestedModelSerializer):
 
+class CSRRSerializer(WritableNestedModelSerializer):
     class Meta:
         model = Case_Source_RouteResponse
         fields = ('id', 'response', 'data_source',)
+
+
 class CSRRListSerializer(WritableNestedModelSerializer):
     response = ResponseParams4CaseSerializer()
     data_source = SourceResultSerializer()
@@ -119,8 +135,9 @@ class CSRRListSerializer(WritableNestedModelSerializer):
         fields = ('id', 'response', 'data_source',)
 
 
-# Case
+
 class CaseListSerializer(serializers.ModelSerializer):
+    req_method = serializers.CharField(source='get_req_method_display')
     myCSRP = CSRPListSerializer(many=True)
     myCSRR = CSRRListSerializer(many=True)
     createby = UserSerializer()
@@ -140,3 +157,7 @@ class CaseSerializer(WritableNestedModelSerializer):
     class Meta:
         model = Case
         fields = '__all__'
+
+# ================================================================
+# -------------------------------Task-----------------------------
+# ================================================================

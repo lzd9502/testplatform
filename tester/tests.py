@@ -10,11 +10,11 @@ JSONHeaders = {}
 JSONHeaders['Content-Type'] = 'application/json'
 JSONHeaders['Authorization'] = 'MyToken ' + res['token']
 # 获取route
-# print('获取项目下全部route:')
-# routeList = requests.get(url + 'route', headers=headers,
-#                          params={'project': 1, 'search': '', 'page_size': 20, 'page': 1}).json()
-# # routeList = requests.get(url + 'route/', headers=headers).json()
-# print(routeList)
+print('获取项目下全部route:')
+routeList = requests.get(url + 'route', headers=headers,
+                         params={'project': 1, 'search': '', 'page_size': 20, 'page': 1}).json()
+# routeList = requests.get(url + 'route/', headers=headers).json()
+print(routeList)
 # 写入route
 # print('写入route：')
 # datas = {
@@ -36,10 +36,13 @@ print('查询Case:')
 pcase=requests.get(url=url+'case',headers=headers,params={'project':1,'search':'apicase1'}).json()
 print(pcase)
 #写入case
-print('写入case:')
-casedata={'name':'apicase1','req_method':'POST','project':1,'myCSRP':[{'route_param':1,'data_source':1}],'myCSRR':[{'response':1,'data_source':1}]}
-setcase=requests.post(url=url+'case/',headers=JSONHeaders,json=casedata).json()
-print(setcase)
+# print('写入case:')
+# casedata={'name':'apicase1','req_method':'POST','project':1,'myCSRP':[{'route_param':1,'data_source':1}],'myCSRR':[{'response':1,'data_source':1}]}
+# setcase=requests.post(url=url+'case/',headers=JSONHeaders,json=casedata).json()
+# print(setcase)
+
+
+
 # sql注入相关
 # URL='http://www.zszywx.com/CMSInfo/WebFile/Web_2/html/news_list.html'
 # URL2='http://192.168.60.114:6005/CMSInfo/WebFile/Web_2/html/news_list.html'
