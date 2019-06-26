@@ -105,7 +105,7 @@ class Task(models.Model):
     name = models.CharField(max_length=16, verbose_name='任务名称')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='myTask', )
     env_config = models.ForeignKey(ProjectConfig, null=True,on_delete=models.SET_NULL, related_name='myTask')
-    start_time = models.DateTimeField(verbose_name='首次启动时间')
+    jenkins_job=models.CharField(max_length=32,null=True,blank=True,verbose_name='jenkins任务ID')
     description = models.TextField(max_length=200, null=True, blank=True, verbose_name='任务简介')
 
 
