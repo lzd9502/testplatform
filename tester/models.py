@@ -116,9 +116,9 @@ class Task2Case(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='myCase')
     case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='myTask')
     disabled=models.BooleanField(default=True,verbose_name='启用状态')
-    create_time=models.DateTimeField(auto_created=True,)
+    create_time=models.DateTimeField(auto_now_add=True)
     create_by=models.ForeignKey(user,null=True,on_delete=models.SET_NULL,related_name='TaskCreatedSelf')
-    update_time=models.DateTimeField(auto_now_add=True,)
+    update_time=models.DateTimeField(auto_now=True,)
     update_by=models.ForeignKey(user,null=True,on_delete=models.SET_NULL,related_name='TaskIUpdatedSelf')
 
 #todo:任务执行流水表

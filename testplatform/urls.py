@@ -28,6 +28,7 @@ route.register('project',testenvconfigviews.ProjectViewset,)
 route.register('route',testerviews.RouteViewset)
 route.register('datasource',dataconfiguratorviews.DataSourceViewset,)
 route.register('case',testerviews.CaseViewset,)
+route.register('task',testerviews.TaskViewset,)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include(route.urls)),

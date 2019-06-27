@@ -4,7 +4,7 @@ from drf_writable_nested import WritableNestedModelSerializer
 
 from dataconfigurator.serializers import SourceResultSerializer
 from .models import Route, RouteParams, RouteResponseGroup, ResponseGroupParam, Case, Case_Source_RouteParam, \
-    Case_Source_RouteResponse
+    Case_Source_RouteResponse, Task, Task2Case
 from testenvconfig.models import Project
 from testenvconfig.serializers import UserSerializer
 
@@ -15,7 +15,7 @@ from testenvconfig.serializers import UserSerializer
 class RouteParamSerializer(serializers.ModelSerializer):
     data_type = serializers.SerializerMethodField()
 
-    def get_data_type(self,obj):
+    def get_data_type(self, obj):
         return obj.get_data_type_display()
 
     class Meta:
@@ -135,7 +135,6 @@ class CSRRListSerializer(WritableNestedModelSerializer):
         fields = ('id', 'response', 'data_source',)
 
 
-
 class CaseListSerializer(serializers.ModelSerializer):
     req_method = serializers.CharField(source='get_req_method_display')
     myCSRP = CSRPListSerializer(many=True)
@@ -158,6 +157,37 @@ class CaseSerializer(WritableNestedModelSerializer):
         model = Case
         fields = '__all__'
 
+
 # ================================================================
 # -------------------------------Task-----------------------------
 # ================================================================
+
+class Task2CaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task2Case
+        fields = ('case', 'disabled')
+
+
+class Task2CaseListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task2Case
+        fields = '__all__'
+
+
+class TaskSerializer(WritableNestedModelSerializer):
+    myCase = Task2CaseSerializer(many=True, allow_null=True)
+
+    class Meta:
+        model = Task
+        fields = '__all__'
+    # def create(self, validated_data):
+    #     print(validated_data)
+    #     myCase=validated_data.pop()
+
+
+class TaskListSerializer(serializers.ModelSerializer):
+    myCase = Task2CaseListSerializer(many=True)
+
+    class Meta:
+        model = Task
+        fields = '__all__'

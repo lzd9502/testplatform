@@ -10,11 +10,11 @@ JSONHeaders = {}
 JSONHeaders['Content-Type'] = 'application/json'
 JSONHeaders['Authorization'] = 'MyToken ' + res['token']
 # 获取route
-print('获取项目下全部route:')
-routeList = requests.get(url + 'route', headers=headers,
-                         params={'project': 1, 'search': '', 'page_size': 20, 'page': 1}).json()
+# print('获取项目下全部route:')
+# routeList = requests.get(url + 'route', headers=headers,
+#                          params={'project': 1, 'search': '', 'page_size': 20, 'page': 1}).json()
 # routeList = requests.get(url + 'route/', headers=headers).json()
-print(routeList)
+# print(routeList)
 # 写入route
 # print('写入route：')
 # datas = {
@@ -31,17 +31,42 @@ print(routeList)
 # setroute = requests.post(url + 'route/', headers=JSONHeaders, json=datas).json()
 # print(setroute)
 
-#查询Case
-print('查询Case:')
-pcase=requests.get(url=url+'case',headers=headers,params={'project':1,'search':'apicase1'}).json()
-print(pcase)
-#写入case
+# 查询Case
+# print('查询Case:')
+# pcase = requests.get(url=url + 'case', headers=headers, params={'project': 1, 'search': 'apicase1'}).json()
+# print(pcase)
+# 写入case
 # print('写入case:')
 # casedata={'name':'apicase1','req_method':'POST','project':1,'myCSRP':[{'route_param':1,'data_source':1}],'myCSRR':[{'response':1,'data_source':1}]}
 # setcase=requests.post(url=url+'case/',headers=JSONHeaders,json=casedata).json()
 # print(setcase)
 
 
+# 查询task
+print('查询task:')
+ptask = requests.get(url + 'task', headers=headers, params={'project': 1}).json()
+print(ptask)
+# 写入task
+task_data = {
+    'name': 'ApiTestTask',
+    'project': 1,
+    'disabled': True,
+    'env_config': 1,
+    'description': '用于测试本平台task创建流程的正确性',
+    'myCase': [{'case': 1}, {'case': 2}],
+}
+# task_data = {
+#     'name': 'ApiTestTask',
+#     'project': 1,
+#     'disabled': True,
+#     'env_config': 1,
+#     'description': '用于测试本平台task创建流程的正确性',
+#     # 'run_'
+#     # 'myCase':'',
+# }
+print('写入task:')
+createTask = requests.post(url + 'task/', headers=JSONHeaders, json=task_data).json()
+print(createTask)
 
 # sql注入相关
 # URL='http://www.zszywx.com/CMSInfo/WebFile/Web_2/html/news_list.html'
