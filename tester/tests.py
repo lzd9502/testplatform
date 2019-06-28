@@ -48,26 +48,36 @@ ptask = requests.get(url + 'task', headers=headers, params={'project': 1}).json(
 print(ptask)
 # 写入task
 task_data = {
-    'name': 'ApiTestTask',
+    'name': 'ApiTestTask6',
     'project': 1,
     'disabled': True,
     'env_config': 1,
+    'run_time':'H H * * 1-5',
+    'command':'C:/python/python.exe C:/Users/Administrator/Documents/GitHub/testplatform/JenkinsServer/test.py',
     'description': '用于测试本平台task创建流程的正确性',
     'myCase': [{'case': 1}, {'case': 2}],
 }
-# task_data = {
-#     'name': 'ApiTestTask',
-#     'project': 1,
-#     'disabled': True,
-#     'env_config': 1,
-#     'description': '用于测试本平台task创建流程的正确性',
-#     # 'run_'
-#     # 'myCase':'',
-# }
 print('写入task:')
 createTask = requests.post(url + 'task/', headers=JSONHeaders, json=task_data).json()
 print(createTask)
-
+#
+from JenkinsServer.JobTemplate import JobConfig
+# job=JobConfig(description=task_data.get('description'),run_time=task_data.get('run_time'),command=task_data.get('command'))
+# def callu(job):
+#     print(job())
+#
+import jenkins
+from JenkinsServer.JobTemplate import JobConfig,CONFIG_XML
+from JenkinsServer.JenkinsServer import Jenkins
+#
+# server=jenkins.Jenkins(url='http://127.0.0.1:8080',username='lzd',password='19950223')
+# server=Jenkins().CreateJenkinsServer()
+# job = JobConfig(**task_data)
+# # print(job())
+# server.create_job(task_data.get('name'), job())
+# # server.create_job(task_data.get('name'), CONFIG_XML(description=task_data.get('description'),run_time=task_data.get('run_time'),command=task_data.get('command')))
+# server.quiet_down()
+# callu(job)
 # sql注入相关
 # URL='http://www.zszywx.com/CMSInfo/WebFile/Web_2/html/news_list.html'
 # URL2='http://192.168.60.114:6005/CMSInfo/WebFile/Web_2/html/news_list.html'

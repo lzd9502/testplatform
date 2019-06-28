@@ -5,7 +5,6 @@ class Jenkins:
     url = 'http://127.0.0.1:8080'
     username = 'lzd'
     password = '19950223'
-
     def CreateJenkinsServer(self):
         server = jenkins.Jenkins(self.url, username=self.username, password=self.password)
         return server

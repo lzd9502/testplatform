@@ -3,6 +3,7 @@ from rest_framework import filters
 from rest_framework import viewsets, status
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
+import jenkins
 
 from .models import Route, Case, Task
 from .pagination import PagePagination
@@ -65,21 +66,21 @@ class TaskViewset(viewsets.ModelViewSet):
         return TaskSerializer
 
     def create(self, request, *args, **kwargs):
-        print(request.data)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        err_msg=None
 
         try:
-            job = JobConfig()
-            job.set_description(request.data.description)
-            job.set_run_time(request.data.pop('run_time'))
-            job.set_command(request.data.pop('command'))
-            jenkins = Jenkins().CreateJenkinsServer()
-            jenkins.create_job(request.data.name, job)
+            job = JobConfig(**request.data)
+            # server = jenkins.Jenkins(url='http://127.0.0.1:8080', username='lzd', password='19950223')
+            server = Jenkins().CreateJenkinsServer()
+            server.create_job(request.data.get('name'), job())
         except Exception as e:
-            return Response(exception=True, status=404, data={'Detail':'创建jenkins服务失败,错误信息：%s'%e})
+            err_msg=e
+        finally:
+            server.quiet_down()
 
         self.perform_create(serializer)
 
         headers = self.get_success_headers(serializer.data)
-        return Response(headers=headers, data=serializer.data, status=201)
+        return Response(headers=headers, data=serializer.data, status=201) if not err_msg else Response(exception=True, status=404, data={'Detail': '创建jenkins服务失败,错误信息：%s' % err_msg})
