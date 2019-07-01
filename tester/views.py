@@ -68,19 +68,24 @@ class TaskViewset(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        err_msg=None
+        err_msg = None
 
+        # with Jenkins().CreateJenkinsServer() as server:
+        #     job = JobConfig(**request.data)
+        #     server.create_job(request.data.get('name'), job())
         try:
             job = JobConfig(**request.data)
             # server = jenkins.Jenkins(url='http://127.0.0.1:8080', username='lzd', password='19950223')
             server = Jenkins().CreateJenkinsServer()
             server.create_job(request.data.get('name'), job())
-        except Exception as e:
-            err_msg=e
-        finally:
             server.quiet_down()
+        except Exception as e:
+            err_msg = e
 
         self.perform_create(serializer)
 
         headers = self.get_success_headers(serializer.data)
-        return Response(headers=headers, data=serializer.data, status=201) if not err_msg else Response(exception=True, status=404, data={'Detail': '创建jenkins服务失败,错误信息：%s' % err_msg})
+        return Response(headers=headers, data=serializer.data, status=201) if not err_msg else Response(exception=True,
+                                                                                                        status=404,
+                                                                                                        data={
+                                                                                                            'Detail': '创建jenkins服务失败,错误信息：%s' % err_msg})

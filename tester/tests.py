@@ -43,23 +43,23 @@ JSONHeaders['Authorization'] = 'MyToken ' + res['token']
 
 
 # 查询task
-print('查询task:')
-ptask = requests.get(url + 'task', headers=headers, params={'project': 1}).json()
-print(ptask)
+# print('查询task:')
+# ptask = requests.get(url + 'task', headers=headers, params={'project': 1}).json()
+# print(ptask)
 # 写入task
-task_data = {
-    'name': 'ApiTestTask6',
-    'project': 1,
-    'disabled': True,
-    'env_config': 1,
-    'run_time':'H H * * 1-5',
-    'command':'C:/python/python.exe C:/Users/Administrator/Documents/GitHub/testplatform/JenkinsServer/test.py',
-    'description': '用于测试本平台task创建流程的正确性',
-    'myCase': [{'case': 1}, {'case': 2}],
-}
-print('写入task:')
-createTask = requests.post(url + 'task/', headers=JSONHeaders, json=task_data).json()
-print(createTask)
+# task_data = {
+#     'name': 'ApiTestTask6',
+#     'project': 1,
+#     'disabled': True,
+#     'env_config': 1,
+#     'run_time':'H H * * 1-5',
+#     'command':'C:/python/python.exe C:/Users/Administrator/Documents/GitHub/testplatform/JenkinsServer/test.py',
+#     'description': '用于测试本平台task创建流程的正确性',
+#     'myCase': [{'case': 1}, {'case': 2}],
+# }
+# print('写入task:')
+# createTask = requests.post(url + 'task/', headers=JSONHeaders, json=task_data).json()
+# print(createTask)
 #
 from JenkinsServer.JobTemplate import JobConfig
 # job=JobConfig(description=task_data.get('description'),run_time=task_data.get('run_time'),command=task_data.get('command'))
