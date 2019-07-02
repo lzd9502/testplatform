@@ -19,10 +19,7 @@
 import argparse
 import inspect
 import os
-import traceback
 import sys
-import shlex
-import six
 
 
 class ArgumentParser(object):
@@ -50,8 +47,8 @@ Available subcommands:
     def print_help(self):
         """打印帮助文档
         """
-        logger.info(self.USAGE % {"ProgramName": self.prog,
-                                  "SubcmdList": "\n".join(['\t%s' % it.name for it in self.subcmd_classes])})
+        # logger.info(self.USAGE % {"ProgramName": self.prog,
+        #                           "SubcmdList": "\n".join(['\t%s' % it.name for it in self.subcmd_classes])})
 
     def parse_args(self, args):
         """解析参数
@@ -67,7 +64,7 @@ Available subcommands:
                 parser = it.parser
                 break
         else:
-            logger.error("invalid subcommand \"%s\"\n" % subcmd)
+            # logger.error("invalid subcommand \"%s\"\n" % subcmd)
             sys.exit(1)
 
         ns = parser.parse_args(args[1:])
@@ -118,12 +115,12 @@ class Help(Command):
             subcmd.parser.print_help()
 
 
-class RunScript(Command):
+class RunTask(Command):
     """执行一个脚本
     """
     name = 'runscript'
-    parser = argparse.ArgumentParser("Run python script")
-    parser.add_argument('script_path', help="target script to run")
+    parser = argparse.ArgumentParser("Run Task")
+    parser.add_argument('--task', help="target script to run")
 
     def execute(self, args):
         """执行过程
@@ -132,217 +129,130 @@ class RunScript(Command):
         runpy.run_path(args.script_path, run_name='__main__')
 
 
-class RunTest(Command):
-    """批量执行测试用例
-    """
-    name = 'runtest'
-    parser = argparse.ArgumentParser("Run QTA testcases")
-    parser.add_argument("tests", metavar="TEST", nargs='*', help="testcase set to executive, eg: zoo.xxx.HelloTest")
-    parser.add_argument('-w', '--working-dir', default=None, help="working directory to store all result files",
-                        dest="working_dir")
-    parser.add_argument('--priority', help="run test cases with specific priority, accept multiple options",
-                        dest="priorities", action="append",
-                        choices=[TestCasePriority.BVT, TestCasePriority.High, TestCasePriority.Normal,
-                                 TestCasePriority.Low])
-    parser.add_argument('--status', default=None, help="run test cases with specific status, accept multiple options",
-                        dest="status", action="append",
-                        choices=[TestCaseStatus.Design, TestCaseStatus.Implement, TestCaseStatus.Ready,
-                                 TestCaseStatus.Review, TestCaseStatus.Suspend])
-    parser.add_argument("--excluded-name",
-                        help="exclude test cases with specific name prefix , accept multiple options",
-                        action="append", dest="excluded_names", metavar="EXCLUDED_NAME")
-    parser.add_argument("--owner", help="run test cases with specific owner, accept multiple options",
-                        action="append", dest="owners", metavar="OWNER")
-    parser.add_argument("--tag", help="run test cases with specific tag, accept multiple options",
-                        action="append", dest="tags", metavar="TAG")
-    parser.add_argument("--excluded-tag", help="exclude test cases with specific name tag, accept multiple options",
-                        action="append", dest="excluded_tags", metavar="EXCLUDED_TAG")
-
-    parser.add_argument("--report-type", help="report type", choices=report_types.keys(), default="stream")
-    parser.add_argument("--report-args", help="additional arguments for specific report", default="")
-    parser.add_argument("--report-args-help", help="show help information for specific report arguemnts",
-                        choices=report_types.keys())
-
-    parser.add_argument("--resmgr-backend-type", help="test resource manager backend type",
-                        choices=resmgr_backend_types.keys(), default="local")
-
-    parser.add_argument("--runner-type", help="test runner type", choices=runner_types.keys(), default="basic")
-    parser.add_argument("--runner-args", help="additional arguments for specific runner", default="")
-    parser.add_argument("--runner-args-help", help="show help information for specific runner arguemnts",
-                        choices=runner_types.keys())
-
-    def execute(self, args):
-        """执行过程
-        """
-        if args.report_args_help:
-            report_types[args.report_args_help].get_parser().print_help()
-            return
-        if args.runner_args_help:
-            runner_types[args.runner_args_help].get_parser().print_help()
-            return
-        if not args.tests:
-            logger.info("no test set specified")
-            exit(1)
-
-        from testbase.testcase import TestCase
-
-        if args.working_dir is None:
-            args.working_dir = os.getcwd()
-
-        priorities = args.priorities or [TestCase.EnumPriority.Low,
-                                         TestCase.EnumPriority.Normal,
-                                         TestCase.EnumPriority.High,
-                                         TestCase.EnumPriority.BVT]
-
-        status = args.status or [TestCase.EnumStatus.Design,
-                                 TestCase.EnumStatus.Implement,
-                                 TestCase.EnumStatus.Review,
-                                 TestCase.EnumStatus.Ready]
-
-        test_conf = TestCaseSettings(names=args.tests,
-                                     excluded_names=args.excluded_names,
-                                     priorities=priorities,
-                                     status=status,
-                                     owners=args.owners,
-                                     tags=args.tags,
-                                     excluded_tags=args.excluded_tags)
-
-        report_type = report_types[args.report_type]
-        if args.report_type == 'xml':
-            class VerboseXMLTestReport(report_types[args.report_type]):
-                def log_test_result(self, testcase, testresult):
-                    logger.info("run test case: %s(pass?:%s)" % (testcase.test_name, testresult.passed))
-                    super(VerboseXMLTestReport, self).log_test_result(testcase, testresult)
-
-            report_type = VerboseXMLTestReport
-
-        elif args.report_type == 'online':
-            class VerboseOnlineTestReport(report_types[args.report_type]):
-                def log_test_result(self, testcase, testresult):
-                    logger.info("run test case: %s(pass?:%s)" % (testcase.test_name, testresult.passed))
-                    super(VerboseOnlineTestReport, self).log_test_result(testcase, testresult)
-
-                def begin_report(self):
-                    super(VerboseOnlineTestReport, self).begin_report()
-                    with codecs_open(os.path.join(os.getcwd(), "report_url.txt"), "w", encoding="utf-8") as fd:
-                        fd.write(self.url)
-
-            report_type = VerboseOnlineTestReport
-
-        report_inst = report_type.parse_args(shlex.split(args.report_args))
-        resmgr_backend = resmgr_backend_types[args.resmgr_backend_type]()
-
-        runner_type = runner_types[args.runner_type]
-        runner = runner_type.parse_args(shlex.split(args.runner_args), report_inst, resmgr_backend)
-
-        prev_dir = os.getcwd()
-        if not os.path.exists(args.working_dir):
-            os.makedirs(args.working_dir)
-        os.chdir(args.working_dir)
-        runner.run(test_conf)
-        os.chdir(prev_dir)
-        if args.report_type == 'online':
-            if sys.platform == "win32":
-                logger.info("opening online report url:%s" % report_inst.url)
-                os.system("start %s" % report_inst.url)
-            else:
-                logger.info("online report generated: %s" % report_inst.url)
-
-        elif args.report_type == 'xml':
-            if sys.platform == "win32":
-                logger.info("opening XML report with IE...")
-                report_xml = os.path.abspath(os.path.join(args.working_dir, "TestReport.xml"))
-                os.system("start iexplore %s" % report_xml)
-            else:
-                logger.info("XML report generated: %s" % os.path.abspath("TestReport.xml"))
+# class RunTest(Command):
+#     """批量执行测试用例
+#     """
+#     name = 'runtest'
+#     parser = argparse.ArgumentParser("Run QTA testcases")
+#     parser.add_argument("tests", metavar="TEST", nargs='*', help="testcase set to executive, eg: zoo.xxx.HelloTest")
+#     parser.add_argument('-w', '--working-dir', default=None, help="working directory to store all result files",
+#                         dest="working_dir")
+#     # parser.add_argument('--priority', help="run test cases with specific priority, accept multiple options",
+#     #                     dest="priorities", action="append",
+#     #                     choices=[TestCasePriority.BVT, TestCasePriority.High, TestCasePriority.Normal,
+#     #                              TestCasePriority.Low])
+#     # parser.add_argument('--status', default=None, help="run test cases with specific status, accept multiple options",
+#     #                     dest="status", action="append",
+#     #                     choices=[TestCaseStatus.Design, TestCaseStatus.Implement, TestCaseStatus.Ready,
+#     #                              TestCaseStatus.Review, TestCaseStatus.Suspend])
+#     parser.add_argument("--excluded-name",
+#                         help="exclude test cases with specific name prefix , accept multiple options",
+#                         action="append", dest="excluded_names", metavar="EXCLUDED_NAME")
+#     parser.add_argument("--owner", help="run test cases with specific owner, accept multiple options",
+#                         action="append", dest="owners", metavar="OWNER")
+#     parser.add_argument("--tag", help="run test cases with specific tag, accept multiple options",
+#                         action="append", dest="tags", metavar="TAG")
+#     parser.add_argument("--excluded-tag", help="exclude test cases with specific name tag, accept multiple options",
+#                         action="append", dest="excluded_tags", metavar="EXCLUDED_TAG")
+#
+#     # parser.add_argument("--report-type", help="report type", choices=report_types.keys(), default="stream")
+#     # parser.add_argument("--report-args", help="additional arguments for specific report", default="")
+#     # parser.add_argument("--report-args-help", help="show help information for specific report arguemnts",
+#     #                     choices=report_types.keys())
+#     #
+#     # parser.add_argument("--resmgr-backend-type", help="test resource manager backend type",
+#     #                     choices=resmgr_backend_types.keys(), default="local")
+#     #
+#     # parser.add_argument("--runner-type", help="test runner type", choices=runner_types.keys(), default="basic")
+#     # parser.add_argument("--runner-args", help="additional arguments for specific runner", default="")
+#     # parser.add_argument("--runner-args-help", help="show help information for specific runner arguemnts",
+#     #                     choices=runner_types.keys())
 
 
-class RunPlan(Command):
-    """执行测试计划
-    """
-    name = "runplan"
-    parser = argparse.ArgumentParser("Run QTA test plan")
-    parser.add_argument("--report-type", help="report type", choices=report_types.keys(), default="stream")
-    parser.add_argument("--report-args", help="additional arguments for specific report", default="")
-    parser.add_argument("--report-args-help", help="show help information for specific report arguemnts",
-                        choices=report_types.keys())
+# class RunPlan(Command):
+#     """执行测试计划
+#     """
+#     name = "runplan"
+#     parser = argparse.ArgumentParser("Run QTA test plan")
+#     parser.add_argument("--report-type", help="report type", choices=report_types.keys(), default="stream")
+#     parser.add_argument("--report-args", help="additional arguments for specific report", default="")
+#     parser.add_argument("--report-args-help", help="show help information for specific report arguemnts",
+#                         choices=report_types.keys())
+#
+#     parser.add_argument("--runner-type", help="test runner type", choices=runner_types.keys(), default="basic")
+#     parser.add_argument("--runner-args", help="additional arguments for specific runner", default="")
+#     parser.add_argument("--runner-args-help", help="show help information for specific runner arguemnts",
+#                         choices=runner_types.keys())
+#
+#     parser.add_argument("--resmgr-backend-type", help="test resource manager backend type",
+#                         choices=resmgr_backend_types.keys(), default="local")
+#
+#     parser.add_argument("plan", help="designate a test plan to run")
+#
+#     def execute(self, args):
+#         """执行过程
+#         """
+#         if args.report_args_help:
+#             report_types[args.report_args_help].get_parser().print_help()
+#             return
+#         if args.runner_args_help:
+#             runner_types[args.runner_args_help].get_parser().print_help()
+#             return
+#
+#         report_type = report_types[args.report_type]
+#         report = report_type.parse_args(shlex.split(args.report_args))
+#
+#         resmgr_backend = resmgr_backend_types[args.resmgr_backend_type]()
+#
+#         runner_type = runner_types[args.runner_type]
+#         runner = runner_type.parse_args(shlex.split(args.runner_args), report, resmgr_backend)
+#
+#         planname = args.plan
+#         planmodulename, planclsname = planname.rsplit(".", 1)
+#         __import__(planmodulename)
+#         planmod = sys.modules[planmodulename]
+#         plancls = getattr(planmod, planclsname)
+#         runner.run(plancls())
 
-    parser.add_argument("--runner-type", help="test runner type", choices=runner_types.keys(), default="basic")
-    parser.add_argument("--runner-args", help="additional arguments for specific runner", default="")
-    parser.add_argument("--runner-args-help", help="show help information for specific runner arguemnts",
-                        choices=runner_types.keys())
-
-    parser.add_argument("--resmgr-backend-type", help="test resource manager backend type",
-                        choices=resmgr_backend_types.keys(), default="local")
-
-    parser.add_argument("plan", help="designate a test plan to run")
-
-    def execute(self, args):
-        """执行过程
-        """
-        if args.report_args_help:
-            report_types[args.report_args_help].get_parser().print_help()
-            return
-        if args.runner_args_help:
-            runner_types[args.runner_args_help].get_parser().print_help()
-            return
-
-        report_type = report_types[args.report_type]
-        report = report_type.parse_args(shlex.split(args.report_args))
-
-        resmgr_backend = resmgr_backend_types[args.resmgr_backend_type]()
-
-        runner_type = runner_types[args.runner_type]
-        runner = runner_type.parse_args(shlex.split(args.runner_args), report, resmgr_backend)
-
-        planname = args.plan
-        planmodulename, planclsname = planname.rsplit(".", 1)
-        __import__(planmodulename)
-        planmod = sys.modules[planmodulename]
-        plancls = getattr(planmod, planclsname)
-        runner.run(plancls())
-
-
-class ManagementToolsConsole(object):
-    """管理工具交互模式
-    """
-    prompt = "QTA> "
-
-    def __init__(self, argparser):
-        self._argparser = argparser
-
-    def cmdloop(self):
-        logger.info("""QTAF %(qtaf_version)s (test project: %(proj_root)s [%(proj_mode)s mode])\n""" % {
-            'qtaf_version': version,
-            'proj_root': settings.PROJECT_ROOT,
-            'proj_mode': settings.PROJECT_MODE,
-        })
-        if six.PY3:
-            raw_input_func = input
-        else:
-            raw_input_func = raw_input
-        while 1:
-            line = raw_input_func(self.prompt)
-            args = shlex.split(line, posix="win" not in sys.platform)
-            if not args:
-                continue
-            subcmd = args[0]
-            if not self._argparser.get_subcommand(subcmd):
-                sys.stderr.write("invalid command: \"%s\"\n" % subcmd)
-                continue
-            try:
-                subcmd, ns = self._argparser.parse_args(args)
-                subcmd.execute(ns)
-            except SystemExit:
-                logger.info("command exit")
-            except:
-                traceback.print_exc()
-
+# class ManagementToolsConsole(object):
+#     """管理工具交互模式
+#     """
+#     prompt = "QTA> "
+#
+#     def __init__(self, argparser):
+#         self._argparser = argparser
+#
+#     def cmdloop(self):
+#         logger.info("""QTAF %(qtaf_version)s (test project: %(proj_root)s [%(proj_mode)s mode])\n""" % {
+#             'qtaf_version': version,
+#             'proj_root': settings.PROJECT_ROOT,
+#             'proj_mode': settings.PROJECT_MODE,
+#         })
+#         if six.PY3:
+#             raw_input_func = input
+#         else:
+#             raw_input_func = raw_input
+#         while 1:
+#             line = raw_input_func(self.prompt)
+#             args = shlex.split(line, posix="win" not in sys.platform)
+#             if not args:
+#                 continue
+#             subcmd = args[0]
+#             if not self._argparser.get_subcommand(subcmd):
+#                 sys.stderr.write("invalid command: \"%s\"\n" % subcmd)
+#                 continue
+#             try:
+#                 subcmd, ns = self._argparser.parse_args(args)
+#                 subcmd.execute(ns)
+#             except SystemExit:
+#                 logger.info("command exit")
+#             except:
+#                 traceback.print_exc()
 
 class ManagementTools(object):
     """管理工具类入口
     """
-    excluded_command_types = [CreateProject, UpgradeProject, RunTestDistPackage, RunPlanDistPackage]
+    excluded_command_types = []
 
     def __init__(self):
         pass
