@@ -171,7 +171,7 @@ class Task2CaseSerializer(serializers.ModelSerializer):
 class Task2CaseListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task2Case
-        exclude=('task',)
+        exclude = ('task',)
 
 
 class TaskSerializer(WritableNestedModelSerializer):

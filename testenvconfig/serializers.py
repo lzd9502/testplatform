@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import U2P, User, Project
+from .models import U2P, User, Project, ProjectConfig
 from rest_framework.validators import UniqueTogetherValidator
 
 
@@ -15,6 +15,12 @@ class ProjectSerializer(serializers.ModelSerializer):
         exclude = ['createtime', 'members']
 
 
+class ProjectConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectConfig
+        fields = '__all__'
+
+
 class U2PSerializer(serializers.ModelSerializer):
     # User = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
@@ -26,5 +32,3 @@ class U2PSerializer(serializers.ModelSerializer):
             message="已加入该项目"
         )]
         fields = ('id', 'User', 'Project')
-
-
