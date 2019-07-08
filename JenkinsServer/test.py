@@ -1,8 +1,9 @@
 import jenkins
-
-server=jenkins.Jenkins(url='http://127.0.0.1:8080',username='lzd',password='19950223')
-#
-job=server.create_job('PythonApiTestJob3',config_xml=jenkins.EMPTY_CONFIG_XML)
+import sys
+import copy
+# server=jenkins.Jenkins(url='http://127.0.0.1:8080',username='lzd',password='19950223')
+# #
+# job=server.create_job('PythonApiTestJob3',config_xml=jenkins.EMPTY_CONFIG_XML)
 # # print('job:',job)
 # job2=server.get_job_info('PythonApiTestJob')
 # print(job2)
@@ -16,12 +17,53 @@ task_data = {
     'disabled': True,
     'env_config': 1,
     'description': '用于测试本平台task创建流程的正确性',
-    'myCase': [{'case':1}, {'case':2}, {'case':3}]
+    'myCase': [{'case': 1}, {'case': 2}, {'case': 3}]
 }
-task_data.get('name')
+
+
+# task_data.get('name')
 # #
 # # data,project=task_data.pop('name','project')
 # # print(data,project)
-runtime='aa'
-assert type(runtime) is str,('wocao')
-task_data.get('description')
+# runtime='aa'
+# assert type(runtime) is str,('wocao')
+# task_data.get('description')
+
+class Single:
+    def __new__(cls):
+        print('create')
+        if not hasattr(cls, '_instance'):
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        print('new')
+        print(self._instance)
+
+
+# a = Single()
+# b = Single()
+# a.test = 'aaa'
+# print('btest', b.test)
+# print(a,b)
+
+class SingleTest:
+    _instance=None
+    def __new__(cls,*args,**kwargs):
+        if cls._instance is None:
+            print('create')
+            cls._instance=super().__new__(cls)
+        return cls._instance
+    def __init__(self):
+        print('init')
+        print(self._instance)
+        # print('myargs',cls.args)
+
+# at=SingleTest(1,2,3)
+bt=SingleTest()
+# at.__dir__()
+list(bt.__dict__)
+print(sys.platform)
+task_data_copy=copy.deepcopy(task_data)
+task_data['name']='wocao'
+print(task_data_copy)

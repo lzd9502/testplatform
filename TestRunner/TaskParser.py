@@ -17,7 +17,7 @@ print(os.environ)
 django.setup()
 
 
-from tester.models import Task as task_model
+from tester.models import Task as task_model,Case as case_model
 from tester.serializers import TaskListSerializer
 from testenvconfig.models import ProjectConfig
 from testenvconfig.serializers import ProjectConfigSerializer
@@ -40,6 +40,7 @@ class Task:
         assert self._data.get('myCase') is not None,('注册Case失败,未找到Case!')
         caselist=self._data.get('myCase')
         self.case=[case.get('id') for case in caselist if case.get('disabled')]
+        #todo:这里要增加被跳过的用例获取
         return self.case
     def initConfig(self):
         assert 'env_config' in self._data.keys(),('注册项目运行环境失败，未找到项目环境')
@@ -47,6 +48,10 @@ class Task:
         queryset=ProjectConfig.objects.get(id=Config_id)
         return ProjectConfigSerializer(queryset).data
         pass
+
+class Case:
+    def __new__(cls, id=None,**kwargs):
+        queryset=case_model.objects.get(id)
 
 
 
