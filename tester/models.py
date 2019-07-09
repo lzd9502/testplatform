@@ -57,8 +57,11 @@ class Case(models.Model):
     用例信息表
     '''
     case_method_choice = (('GET', 'get'), ('POST', 'post'), ('PUT', 'put'), ('DELETE', 'delete'))
+    case_status_choice=((0,'error'),(1,'normal'))
     name = models.CharField(max_length=16, verbose_name='用例名')
     req_method = models.CharField(max_length=6, choices=case_method_choice, default=case_method_choice[0])
+    disabled=models.BooleanField(default=False)
+    fixed=models.CharField(max_length=1,choices=case_status_choice,default=1)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='mycase')
     createtime = models.DateTimeField(auto_now_add=True)
     createby = models.ForeignKey(user, null=True, on_delete=models.SET_NULL, related_name='casecreater')
@@ -105,7 +108,6 @@ class Task(models.Model):
     name = models.CharField(max_length=16, verbose_name='任务名称')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='myTask', )
     env_config = models.ForeignKey(ProjectConfig, null=True,on_delete=models.SET_NULL, related_name='myTask')
-    jenkins_job=models.CharField(max_length=32,null=True,blank=True,verbose_name='jenkins任务ID')
     description = models.TextField(max_length=200, null=True, blank=True, verbose_name='任务简介')
 
 
@@ -115,7 +117,6 @@ class Task2Case(models.Model):
     '''
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='myCase')
     case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='myTask')
-    disabled=models.BooleanField(default=True,verbose_name='启用状态')
     create_time=models.DateTimeField(auto_now_add=True)
     create_by=models.ForeignKey(user,null=True,on_delete=models.SET_NULL,related_name='TaskCreatedSelf')
     update_time=models.DateTimeField(auto_now=True,)
