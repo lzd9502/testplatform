@@ -5,12 +5,16 @@ from django.contrib.auth import get_user_model
 
 user = get_user_model()
 
-
 # Create your models here.
 
 # =====================================================================
 # --------------------------------Route--------------------------------
 # =====================================================================
+
+ROUTEPARAMS_TYPE_CHOICE = ((0, 'header'), (1, 'param'), (2, 'body'), (3, 'url_param'))
+CASE_METHOD_CHOICE = (('GET', 'get'), ('POST', 'post'), ('PUT', 'put'), ('DELETE', 'delete'))
+CASE_STATUS_CHOICE = ((0, 'error'), (1, 'normal'))
+
 
 class Route(models.Model):
     '''
@@ -26,10 +30,10 @@ class RouteParams(models.Model):
     '''
     路由参数表
     '''
-    type_choice = ((0, 'header'), (1, 'param'), (2, 'body'), (3, 'url_param'))
+
     route = models.ForeignKey(Route, on_delete=models.CASCADE, verbose_name='所属路由', related_name='myrouteparams')
     param = models.CharField(max_length=16, verbose_name='参数名')
-    data_type = models.CharField(max_length=1, choices=type_choice, default=1, verbose_name='参数形式')
+    data_type = models.CharField(max_length=1, choices=ROUTEPARAMS_TYPE_CHOICE, default=1, verbose_name='参数形式')
 
 
 class RouteResponseGroup(models.Model):
@@ -56,12 +60,11 @@ class Case(models.Model):
     '''
     用例信息表
     '''
-    case_method_choice = (('GET', 'get'), ('POST', 'post'), ('PUT', 'put'), ('DELETE', 'delete'))
-    case_status_choice=((0,'error'),(1,'normal'))
+
     name = models.CharField(max_length=16, verbose_name='用例名')
-    req_method = models.CharField(max_length=6, choices=case_method_choice, default=case_method_choice[0])
-    disabled=models.BooleanField(default=False)
-    fixed=models.CharField(max_length=1,choices=case_status_choice,default=1)
+    req_method = models.CharField(max_length=6, choices=CASE_METHOD_CHOICE, default=CASE_METHOD_CHOICE[0])
+    disabled = models.BooleanField(default=False)
+    fixed = models.CharField(max_length=1, choices=CASE_STATUS_CHOICE, default=1)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='mycase')
     createtime = models.DateTimeField(auto_now_add=True)
     createby = models.ForeignKey(user, null=True, on_delete=models.SET_NULL, related_name='casecreater')
@@ -107,7 +110,7 @@ class Task(models.Model):
     '''
     name = models.CharField(max_length=16, verbose_name='任务名称')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='myTask', )
-    env_config = models.ForeignKey(ProjectConfig, null=True,on_delete=models.SET_NULL, related_name='myTask')
+    env_config = models.ForeignKey(ProjectConfig, null=True, on_delete=models.SET_NULL, related_name='myTask')
     description = models.TextField(max_length=200, null=True, blank=True, verbose_name='任务简介')
 
 
@@ -117,9 +120,9 @@ class Task2Case(models.Model):
     '''
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='myCase')
     case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='myTask')
-    create_time=models.DateTimeField(auto_now_add=True)
-    create_by=models.ForeignKey(user,null=True,on_delete=models.SET_NULL,related_name='TaskCreatedSelf')
-    update_time=models.DateTimeField(auto_now=True,)
-    update_by=models.ForeignKey(user,null=True,on_delete=models.SET_NULL,related_name='TaskIUpdatedSelf')
+    create_time = models.DateTimeField(auto_now_add=True)
+    create_by = models.ForeignKey(user, null=True, on_delete=models.SET_NULL, related_name='TaskCreatedSelf')
+    update_time = models.DateTimeField(auto_now=True, )
+    update_by = models.ForeignKey(user, null=True, on_delete=models.SET_NULL, related_name='TaskIUpdatedSelf')
 
-#todo:任务执行流水表
+# todo:任务执行流水表

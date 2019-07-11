@@ -10,6 +10,7 @@ import copy
 # buildinfo=server.get_build_info('the exp test',1)
 # print('buildinfo:',buildinfo)
 # print(server.get_all_jobs())
+import os
 
 task_data = {
     'name': 'ApiTestTask',
@@ -20,7 +21,9 @@ task_data = {
     'myCase': [{'case': 1}, {'case': 2}, {'case': 3}]
 }
 
-
+while task_data:
+    a=task_data.popitem()
+    print(a)
 # task_data.get('name')
 # #
 # # data,project=task_data.pop('name','project')
@@ -67,3 +70,31 @@ print(sys.platform)
 task_data_copy=copy.deepcopy(task_data)
 task_data['name']='wocao'
 print(task_data_copy)
+print(__file__)
+print(os.path.dirname(__file__))
+print(os.path.abspath(__file__))
+print(os.path.abspath(os.path.dirname(__file__)))
+basepath=os.path.basename(os.path.abspath(os.path.dirname(__file__)))
+print(basepath)
+print(type(basepath))
+normalpath=os.path.normpath(basepath)
+print(normalpath)
+__import__(normalpath)
+name=sys.modules[normalpath]
+# __import__('testconfig')
+
+print(name)
+print(dir(name))
+print(sys.modules.keys())
+import unittest
+import JenkinsServer
+testerpath=os.path.dirname(os.path.dirname(__file__))+'/tester'
+print(testerpath)
+sys.path.insert(0,testerpath)
+path=os.path.basename(testerpath)
+print(path)
+__import__(path)
+print(sys.path)
+name2=sys.modules[path]
+print('name2',name2,'%%%',dir(name2))
+print(dir(__file__))

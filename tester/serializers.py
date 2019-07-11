@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from drf_writable_nested import WritableNestedModelSerializer
 
-from dataconfigurator.serializers import SourceResultSerializer
+from dataconfigurator.serializers import SourceResultSerializer,SourceResultListSerializer
 from .models import Route, RouteParams, RouteResponseGroup, ResponseGroupParam, Case, Case_Source_RouteParam, \
     Case_Source_RouteResponse, Task, Task2Case
 from testenvconfig.models import Project
@@ -113,7 +113,7 @@ class CSRPSerializer(serializers.ModelSerializer):
 
 class CSRPListSerializer(serializers.ModelSerializer):
     route_param = RouteParamSerializer()
-    data_source = SourceResultSerializer()
+    data_source = SourceResultListSerializer()
 
     class Meta:
         model = Case_Source_RouteParam
@@ -136,7 +136,7 @@ class CSRRListSerializer(WritableNestedModelSerializer):
 
 
 class CaseListSerializer(serializers.ModelSerializer):
-    req_method = serializers.CharField(source='get_req_method_display')
+    # req_method = serializers.CharField(source='get_req_method_display')
     myCSRP = CSRPListSerializer(many=True)
     myCSRR = CSRRListSerializer(many=True)
     createby = UserSerializer()

@@ -7,11 +7,22 @@ class SourceResultSerializer(serializers.ModelSerializer):
     class Meta:
         model=SourceResult
         fields=('id','name',)
-
-
 class DataSourceSerializer(WritableNestedModelSerializer):
     children=SourceResultSerializer(many=True)
     class Meta:
         model=DataSource
         fields='__all__'
         validator=[UniqueTogetherValidator(queryset=SourceResult.objects.all(),fields=('name','datasource'),message='存在同名的结果变量！')]
+
+class DataSourceListSerializer(WritableNestedModelSerializer):
+    class Meta:
+        model=DataSource
+        fields='__all__'
+
+class SourceResultListSerializer(serializers.ModelSerializer):
+    datasource=DataSourceListSerializer()
+    class Meta:
+        model=SourceResult
+        fields='__all__'
+
+

@@ -2,6 +2,7 @@ import sys
 import re
 import os
 import django
+import requests
 
 print(__file__)
 print(sys.path)
@@ -16,8 +17,8 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "testplatform.settings")
 print(os.environ)
 django.setup()
 
-from tester.models import Task2Case as task_model, Case as case_model
-from tester.serializers import TaskListSerializer
+from tester.models import Task2Case as task_model, Case as case_model, ROUTEPARAMS_TYPE_CHOICE
+from tester.serializers import TaskListSerializer, CaseListSerializer
 from testenvconfig.models import ProjectConfig
 from testenvconfig.serializers import ProjectConfigSerializer
 
@@ -59,21 +60,66 @@ class Task:
 
 
 class Task:
-    name=None
+    name = None
+
     def __new__(cls, id=None, **kwargs):
-        assert id is not None,('注册Task失败!缺少唯一参数值')
+        assert id is not None, ('注册Task失败!缺少唯一参数值')
         task_queryset = task_model.objects.get(id)
         task_data = TaskListSerializer(task_queryset).data
-        cls.name=task_data.get('name')
-        task_case=[case.get('case') for case in task_data.get('myCase')]
-        case_queryset=case_model.objects.filter(id__in=task_case)
+        cls.name = task_data.get('name')
+        task_case = [case.get('case') for case in task_data.get('myCase')]
+        case_queryset = case_model.objects.filter(id__in=task_case)
         disabled_map = lambda x: x.disabled
         err_map = lambda x: (not x.disabled) and x.fixed
         disabled_case = map(disabled_map, case_queryset)
         err_case = map(err_map, case_queryset)
+        case = CaseListSerializer(case_queryset)
+        return super().__new__(cls)
+
+    def run(self):
+        pass
+
 
 class Case:
-    def __new__(cls, case_id):
+    req_method = None
+    myCSRP = None
+    myCSRR = None
+    _result = None
+    _param2source = {}
 
+    def __new__(cls, case):
+        for k, v in case:
+            cls.__setattr__(k, v)
+        for k in ROUTEPARAMS_TYPE_CHOICE:
+            assert type(k[-1]) is str, ('parase route_type error')
+            cls.__setattr__(k[-1], {})
+            cls._param2source[k[0]] = k[-1]
+        return super().__new__(cls)
+        pass
 
+    def _requests(self):
+        assert '_req_method' in self.__dict__, ('not inference requests method!')
+        return getattr(requests, self.req_method.lower())
+
+    def initRequests(self):
+        assert 'myCSRP' in self.__dict__, ('error case with None RouteParams!')
+        while self.myCSRP:
+            param = self.myCSRP.popitem()
+            route_param = param.get('route_param')
+            data_type = route_param.get('data_type')  # {ID:'',routeparam:{datatype:'',...},datasource:{...}}
+            type_param = getattr(self, self._param2source[data_type], None)
+            type_param[route_param.get('name')] = None
+        pass
+    def before_run(self):
+        pass
+    def run(self):
+        _method = self._requests()
+
+        pass
+
+    def result(self):
+        pass
+
+class DataSource:
+    def __new__(cls, *args, **kwargs):
         pass
