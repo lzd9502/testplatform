@@ -128,7 +128,7 @@ class CSRRSerializer(WritableNestedModelSerializer):
 
 class CSRRListSerializer(WritableNestedModelSerializer):
     response = ResponseParams4CaseSerializer()
-    data_source = SourceResultSerializer()
+    data_source = SourceResultListSerializer()
 
     class Meta:
         model = Case_Source_RouteResponse

@@ -1,8 +1,10 @@
+import copy
 import sys
 import re
 import os
 import django
 import requests
+import pymssql
 
 print(__file__)
 print(sys.path)
@@ -103,15 +105,28 @@ class Case:
 
     def initRequests(self):
         assert 'myCSRP' in self.__dict__, ('error case with None RouteParams!')
-        while self.myCSRP:
-            param = self.myCSRP.popitem()
-            route_param = param.get('route_param')
+        myCSRP = copy.deepcopy(self.myCSRP)
+        data_source = []
+        while myCSRP:
+            csrp = myCSRP.popitem()
+            route_param = csrp.get('route_param')
             data_type = route_param.get('data_type')  # {ID:'',routeparam:{datatype:'',...},datasource:{...}}
+            source_data = csrp.get('data_source').get
             type_param = getattr(self, self._param2source[data_type], None)
             type_param[route_param.get('name')] = None
         pass
+
+    def _initDataSourceConfig(self):
+        # todo:此处应根据用户项目设置的数据库类型返回对应实例
+        return DataSource('192.168.3.251', '1433', 'WdEduWisdomSchoolTest', 'select', 'select2018').create()
+
+    def initDataSource(self):
+
+        pass
+
     def before_run(self):
         pass
+
     def run(self):
         _method = self._requests()
 
@@ -120,6 +135,91 @@ class Case:
     def result(self):
         pass
 
+
+class ParamParaser:
+    # 状态管理模式??
+    _id = {}
+    _instance = None
+    creater = None
+    runner = None
+
+    def __new__(cls, instance_data):
+        _instance_data = dict_to_object(instance_data)
+        datasource = _instance_data.datasource
+        _instance_id = datasource.id
+        print('_id:',cls._id)
+        if cls._id =={} or _instance_id not in cls._id.keys():
+
+            cls._instance = super().__new__(cls)
+            cls._id[_instance_id]=cls._instance
+        # cls.__setattr__[_instance_data.name]=None
+        return cls._id[_instance_id]
+
+    def __init__(self, instance_data):
+        _instance_data = dict_to_object(instance_data)
+        self.__setattr__(_instance_data.name, None)
+        self.creater = _instance_data.datasource.source_creater
+        self.runner = _instance_data.datasource.source_runner
+
+
 class DataSource:
-    def __new__(cls, *args, **kwargs):
-        pass
+    data = None
+
+    def __init__(self, dbhost=None, dbport=None, database=None, user=None, password=None, isdict=True):
+        self.server = dbhost + dbport
+        self.database = database
+        self.user = user
+        self.password = password
+        self.isdict = isdict
+
+    def excute(self, script):
+        cursor = self.ss.cursor()
+        cursor.execute(script)
+        res = cursor.fetchone()
+        cursor.close()
+        return res
+
+    def _create(self):
+        try:
+            self.ss = pymssql.connect(server=self.server, user=self.user, password=self.password,
+                                      database=self.database,
+                                      as_dict=self.isdict)
+        except pymssql.OperationalError:
+            self.ss = None
+            raise ConnectionError('连接数据库失败')
+        return self.ss
+
+
+class Dict(dict):
+    __setattr__ = dict.__setitem__
+    __getattr__ = dict.__getitem__
+
+
+def dict_to_object(dictObj):
+    if not isinstance(dictObj, dict):
+        return dictObj
+    inst = Dict()
+    for k, v in dictObj.items():
+        inst[k] = dict_to_object(v)
+    return inst
+
+
+if __name__ == '__main__':
+    from tester.serializers import CaseListSerializer
+    from tester.models import Case
+    import copy
+
+    que = Case.objects.get(id=2)
+    ser = CaseListSerializer(que).data
+    a_dict = ser.get('myCSRP')[0].get('data_source')
+    b_dict = copy.deepcopy(a_dict)
+    b_dict.get('datasource')['id'] = 2
+    ap = ParamParaser(a_dict)
+    bp = ParamParaser(b_dict)
+    cp = ParamParaser(a_dict)
+    ap.runner = 1
+    bp.runner=2
+    ap.csf='csf'
+    bp.csf
+    print(ap.runner,bp.runner, cp.runner)
+    print(ap.csf,bp.csf,cp.csf)
