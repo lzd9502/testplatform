@@ -15,6 +15,7 @@ multi-key-dict==2.0.3
 pbr==5.3.1
 pipreqs==0.4.9
 PyJWT==1.7.1
+pymssql==2.1.4
 python-jenkins==1.4.0
 pytz==2019.1
 requests==2.22.0
