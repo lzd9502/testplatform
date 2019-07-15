@@ -83,42 +83,52 @@ class Task:
 
 
 class Case:
+    '''
+    与数据库交互后的case进行处理
+    '''
     req_method = None
     myCSRP = None
     myCSRR = None
     _result = None
-    _param2source = {}
+    _Param_Type_Mapper = {}
 
-    def __new__(cls, case):
+    def __init__(self, case):
         for k, v in case:
-            cls.__setattr__(k, v)
-        for k in ROUTEPARAMS_TYPE_CHOICE:
-            assert type(k[-1]) is str, ('parase route_type error')
-            cls.__setattr__(k[-1], {})
-            cls._param2source[k[0]] = k[-1]
-        return super().__new__(cls)
+            self.__setattr__(k, v)
+        self._initParamType()
+
         pass
 
-    def _requests(self):
-        assert '_req_method' in self.__dict__, ('not inference requests method!')
+    def _initParamType(self):
+        # todo:当序列化器实现choices时，弃用
+        for k in ROUTEPARAMS_TYPE_CHOICE:
+            assert type(k[-1]) is str, ('parase route_type error')
+            assert getattr(self, k[-1], None) is not None, ('初始化参数类型错误，与Case对象属性冲突的属性名：%s' % k[-1])
+            self.__setattr__(k[-1], {})
+            self._Param_Type_Mapper[k[0]] = k[-1]
+            return self._Param_Type_Mapper
+
+    def _initRequestsMethods(self):
+        assert '_req_method' in self.__dict__.keys(), ('not inference requests method!')
         return getattr(requests, self.req_method.lower())
 
-    def initRequests(self):
-        assert 'myCSRP' in self.__dict__, ('error case with None RouteParams!')
+    def _initRequestsData(self):
+        assert 'myCSRP' is not None, ('error case with None RouteParams!')
         myCSRP = copy.deepcopy(self.myCSRP)
-        data_source = []
         while myCSRP:
             csrp = myCSRP.popitem()
             route_param = csrp.get('route_param')
             data_type = route_param.get('data_type')  # {ID:'',routeparam:{datatype:'',...},datasource:{...}}
-            source_data = csrp.get('data_source').get
-            type_param = getattr(self, self._param2source[data_type], None)
-            type_param[route_param.get('name')] = None
+            data_source = csrp.get('data_source')
+            param_parser = ParamParser(data_source)
+            type_param = getattr(self, self._Param_Type_Mapper[data_type],
+                                 ValueError('Error Value With %s:%s' % (self, self._Param_Type_Mapper[data_type])))
+            type_param[route_param.get('name')] = getattr(param_parser, data_source.get('name'))
         pass
 
     def _initDataSourceConfig(self):
         # todo:此处应根据用户项目设置的数据库类型返回对应实例
-        return DataSource('192.168.3.251', '1433', 'WdEduWisdomSchoolTest', 'select', 'select2018').create()
+        return DBConnect('192.168.3.251', '1433', 'WdEduWisdomSchoolTest', 'select', 'select2018')
 
     def initDataSource(self):
 
@@ -136,33 +146,44 @@ class Case:
         pass
 
 
-class ParamParaser:
-    # 状态管理模式??
+class ParamParser:
+    # 状态管理模式??解析对象
     _id = {}
     _instance = None
-    creater = None
-    runner = None
+    _creater = None
+    _runner = None
 
     def __new__(cls, instance_data):
         _instance_data = dict_to_object(instance_data)
         datasource = _instance_data.datasource
         _instance_id = datasource.id
-        print('_id:',cls._id)
-        if cls._id =={} or _instance_id not in cls._id.keys():
-
+        if cls._id == {} or _instance_id not in cls._id.keys():
             cls._instance = super().__new__(cls)
-            cls._id[_instance_id]=cls._instance
+            cls._id[_instance_id] = cls._instance
         # cls.__setattr__[_instance_data.name]=None
         return cls._id[_instance_id]
 
     def __init__(self, instance_data):
         _instance_data = dict_to_object(instance_data)
         self.__setattr__(_instance_data.name, None)
-        self.creater = _instance_data.datasource.source_creater
-        self.runner = _instance_data.datasource.source_runner
+        self._creater = _instance_data.datasource.source_creater
+        self._runner = _instance_data.datasource.source_runner
 
+    def __getattr__(self, item):
+        return None
 
-class DataSource:
+    def _run(self, runner=None, script=None):
+        assert any((runner, script)), ValueError(
+            'empty objects or scripts! runner like %s with script like %s' % (runner, script))
+        assert issubclass(runner,Connect),TypeError('Error Type of Runner:%s,must a Connect Object',type(runner))
+        self._runner_res = runner.execute(script)
+        pass
+
+class Connect:
+    #todo:解决Connect基类，处理DataSource_type,根据type提供不同的excute方法,返回dict对象
+    pass
+
+class DBConnect(Connect):
     data = None
 
     def __init__(self, dbhost=None, dbport=None, database=None, user=None, password=None, isdict=True):
@@ -172,7 +193,7 @@ class DataSource:
         self.password = password
         self.isdict = isdict
 
-    def excute(self, script):
+    def execute(self, script):
         cursor = self.ss.cursor()
         cursor.execute(script)
         res = cursor.fetchone()
@@ -211,15 +232,25 @@ if __name__ == '__main__':
 
     que = Case.objects.get(id=2)
     ser = CaseListSerializer(que).data
+    print('ser:', ser)
     a_dict = ser.get('myCSRP')[0].get('data_source')
     b_dict = copy.deepcopy(a_dict)
     b_dict.get('datasource')['id'] = 2
-    ap = ParamParaser(a_dict)
-    bp = ParamParaser(b_dict)
-    cp = ParamParaser(a_dict)
-    ap.runner = 1
-    bp.runner=2
-    ap.csf='csf'
-    bp.csf
-    print(ap.runner,bp.runner, cp.runner)
-    print(ap.csf,bp.csf,cp.csf)
+    ap = ParamParser(a_dict)
+    bp = ParamParser(b_dict)
+    cp = ParamParser(a_dict)
+    ap._runner = 1
+    bp._runner = 2
+    ap.csf = 'csf'
+    print(ap._runner, bp._runner, cp._runner)
+    print(ap.csf, bp.csf, cp.csf, bp.ccs, bp.run)
+    print(getattr(ap, 'runner', None))
+    print(ap.__dict__)
+    # print('-----------------------------------')
+    # class a(ParamParser):
+    #     def _run(self, runner=None, script=None):
+    #         self.csf='gaiwanle'
+    # app=a(a_dict)
+    # print(app.csf)
+    # app._run()
+    # print(app.csf)
