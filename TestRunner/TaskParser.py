@@ -25,6 +25,7 @@ from testenvconfig.models import ProjectConfig
 from testenvconfig.serializers import ProjectConfigSerializer
 
 
+
 class Task:
     _id = None
     _data = None
@@ -77,12 +78,12 @@ class Task:
         err_case = map(err_map, case_queryset)
         case = CaseListSerializer(case_queryset)
         return super().__new__(cls)
-
+    # def __init__(self,id=None,**kwargs):
     def run(self):
         pass
 
 
-class Case:
+class CaseParser:
     '''
     与数据库交互后的case进行处理
     '''
@@ -106,7 +107,7 @@ class Case:
             assert getattr(self, k[-1], None) is not None, ('初始化参数类型错误，与Case对象属性冲突的属性名：%s' % k[-1])
             self.__setattr__(k[-1], {})
             self._Param_Type_Mapper[k[0]] = k[-1]
-            return self._Param_Type_Mapper
+        return self._Param_Type_Mapper
 
     def _initRequestsMethods(self):
         assert '_req_method' in self.__dict__.keys(), ('not inference requests method!')
@@ -128,6 +129,7 @@ class Case:
 
     def _initDataSourceConfig(self):
         # todo:此处应根据用户项目设置的数据库类型返回对应实例
+        from TestRunner.Connect import DBConnect
         return DBConnect('192.168.3.251', '1433', 'WdEduWisdomSchoolTest', 'select', 'select2018')
 
     def initDataSource(self):
@@ -175,40 +177,12 @@ class ParamParser:
     def _run(self, runner=None, script=None):
         assert any((runner, script)), ValueError(
             'empty objects or scripts! runner like %s with script like %s' % (runner, script))
-        assert issubclass(runner,Connect),TypeError('Error Type of Runner:%s,must a Connect Object',type(runner))
+        from TestRunner.Connect import Connect
+        assert isinstance(runner,Connect),TypeError('Error Type of Runner:%s,must a Connect Object',type(runner))
         self._runner_res = runner.execute(script)
+        [self.__setattr__(k,self._runner_res[k]) for k in (self._runner_res.keys() and self.__dict__.keys())]
         pass
 
-class Connect:
-    #todo:解决Connect基类，处理DataSource_type,根据type提供不同的excute方法,返回dict对象
-    pass
-
-class DBConnect(Connect):
-    data = None
-
-    def __init__(self, dbhost=None, dbport=None, database=None, user=None, password=None, isdict=True):
-        self.server = dbhost + dbport
-        self.database = database
-        self.user = user
-        self.password = password
-        self.isdict = isdict
-
-    def execute(self, script):
-        cursor = self.ss.cursor()
-        cursor.execute(script)
-        res = cursor.fetchone()
-        cursor.close()
-        return res
-
-    def _create(self):
-        try:
-            self.ss = pymssql.connect(server=self.server, user=self.user, password=self.password,
-                                      database=self.database,
-                                      as_dict=self.isdict)
-        except pymssql.OperationalError:
-            self.ss = None
-            raise ConnectionError('连接数据库失败')
-        return self.ss
 
 
 class Dict(dict):
@@ -236,21 +210,25 @@ if __name__ == '__main__':
     a_dict = ser.get('myCSRP')[0].get('data_source')
     b_dict = copy.deepcopy(a_dict)
     b_dict.get('datasource')['id'] = 2
-    ap = ParamParser(a_dict)
-    bp = ParamParser(b_dict)
-    cp = ParamParser(a_dict)
-    ap._runner = 1
-    bp._runner = 2
-    ap.csf = 'csf'
-    print(ap._runner, bp._runner, cp._runner)
-    print(ap.csf, bp.csf, cp.csf, bp.ccs, bp.run)
-    print(getattr(ap, 'runner', None))
-    print(ap.__dict__)
+    # ap = ParamParser(a_dict)
+    # bp = ParamParser(b_dict)
+    # cp = ParamParser(a_dict)
+    # ap._runner = 1
+    # bp._runner = 2
+    # ap.csf = 'csf'
+    # print(ap._runner, bp._runner, cp._runner)
+    # print(ap.csf, bp.csf, cp.csf, bp.ccs, bp.run)
+    # print(getattr(ap, 'runner', None))
+    # print(ap.__dict__)
     # print('-----------------------------------')
-    # class a(ParamParser):
-    #     def _run(self, runner=None, script=None):
-    #         self.csf='gaiwanle'
-    # app=a(a_dict)
+    class a(ParamParser):
+        def _run(self, runner=None, script=None):
+            self.csf='gaiwanle'
+    app=a(a_dict)
     # print(app.csf)
     # app._run()
     # print(app.csf)
+    #-------------------------------------------
+    print(isinstance(app,a))
+    print(isinstance(app,ParamParser))
+    print(issubclass(a,ParamParser))
