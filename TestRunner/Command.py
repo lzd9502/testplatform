@@ -1,26 +1,10 @@
-# -*- coding: utf-8 -*-
-#
-# Tencent is pleased to support the open source community by making QTA available.
-# Copyright (C) 2016THL A29 Limited, a Tencent company. All rights reserved.
-# Licensed under the BSD 3-Clause License (the "License"); you may not use this
-# file except in compliance with the License. You may obtain a copy of the License at
-#
-# https://opensource.org/licenses/BSD-3-Clause
-#
-# Unless required by applicable law or agreed to in writing, software distributed
-# under the License is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS
-# OF ANY KIND, either express or implied. See the License for the specific language
-# governing permissions and limitations under the License.
-#
-"""
-管理和辅助工具
-"""
 
 import argparse
 import inspect
 import os
 import sys
-
+sys.path.append(os.path.dirname(__file__))
+from TestRunner.Runner import TaskRunner
 
 class ArgumentParser(object):
     """参数解析
@@ -125,8 +109,9 @@ class RunTask(Command):
     def execute(self, args):
         """执行过程
         """
-        import runpy
-        runpy.run_path(args.script_path, run_name='__main__')
+        task=args.task
+        runner=TaskRunner()
+        runner.run(task)
 
 
 # class RunTest(Command):
@@ -290,5 +275,3 @@ class ManagementTools(object):
         if len(sys.argv) > 1:
             subcmd, args = argparser.parse_args(sys.argv[1:])
             subcmd.execute(args)
-        else:
-            ManagementToolsConsole(argparser).cmdloop()

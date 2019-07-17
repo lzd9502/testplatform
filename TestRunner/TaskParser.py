@@ -47,10 +47,10 @@ class Task:
         case_data = self._data.get('myCase')
         self.case = [case.get('case') for case in case_data]
         case_queryset = case_model.objects.filter(id_in=self.case)
-        disabled_map = lambda x: x.disabled
-        err_map = lambda x: (not x.disabled) and x.fixed
-        disabled_case = map(disabled_map, case_queryset)
-        err_case = map(err_map, case_queryset)
+        # disabled_map = lambda x: x.disabled
+        # err_map = lambda x: (not x.disabled) and x.fixed
+        # disabled_case = map(disabled_map, case_queryset)
+        # err_case = map(err_map, case_queryset)
         # todo:这里要增加被跳过的用例获取
         return self.case
 
@@ -62,7 +62,7 @@ class Task:
         pass
 
 
-class Task:
+class TaskParser:
     name = None
 
     def __new__(cls, id=None, **kwargs):
@@ -76,12 +76,9 @@ class Task:
         err_map = lambda x: (not x.disabled) and x.fixed
         disabled_case = map(disabled_map, case_queryset)
         err_case = map(err_map, case_queryset)
-        case = CaseListSerializer(case_queryset)
+        case_serializer = CaseListSerializer(case_queryset)
         return super().__new__(cls)
     # def __init__(self,id=None,**kwargs):
-    def run(self):
-        pass
-
 
 class CaseParser:
     '''
@@ -97,7 +94,6 @@ class CaseParser:
         for k, v in case:
             self.__setattr__(k, v)
         self._initParamType()
-
         pass
 
     def _initParamType(self):
@@ -114,7 +110,7 @@ class CaseParser:
         return getattr(requests, self.req_method.lower())
 
     def _initRequestsData(self):
-        assert 'myCSRP' is not None, ('error case with None RouteParams!')
+        assert self.myCSRP is not None, ('error case with None RouteParams!')
         myCSRP = copy.deepcopy(self.myCSRP)
         while myCSRP:
             csrp = myCSRP.popitem()
@@ -139,13 +135,12 @@ class CaseParser:
     def before_run(self):
         pass
 
-    def run(self):
+    def run(self,result=None):
+        self.before_run()
         _method = self._requests()
 
         pass
 
-    def result(self):
-        pass
 
 
 class ParamParser:
