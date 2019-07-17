@@ -1,6 +1,9 @@
 import sys
 
 #抄自Unittest.runner,重写write进行自动换行
+import time
+
+
 class _WritelnDecorator(object):
     """Used to decorate file-like objects with a handy 'writeln' method"""
     def __init__(self,stream):
@@ -27,5 +30,13 @@ class BaseRunner:
         return self.result(self.stream)
     def run(self,test):
         result=self._initResult()
-
+        startTime=time.time()
+        try:
+            test(result)
+        finally:
+            stopTime=time.time()
+        timeTaken=stopTime-startTime
+        self.stream.writeln('run %d test in %.2fs'%(result.testsRun,timeTaken))
+        self.stream.writeln()
+        return result
         pass
