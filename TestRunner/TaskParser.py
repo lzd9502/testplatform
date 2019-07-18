@@ -1,3 +1,4 @@
+import contextlib
 import copy
 import sys
 import re
@@ -23,7 +24,6 @@ from tester.models import Task2Case as task_model, Case as case_model, ROUTEPARA
 from tester.serializers import TaskListSerializer, CaseListSerializer
 from testenvconfig.models import ProjectConfig
 from testenvconfig.serializers import ProjectConfigSerializer
-
 
 
 class Task:
@@ -80,6 +80,42 @@ class TaskParser:
         return super().__new__(cls)
     # def __init__(self,id=None,**kwargs):
 
+
+class SkipTest(Exception):
+    pass
+class _Outcome(object):
+    def __init__(self, result=None):
+        self.expecting_failure = False
+        self.result = result
+        self.result_supports_subtests = hasattr(result, "addSubTest")
+        self.success = True
+        self.skipped = []
+        self.expectedFailure = None
+        self.errors = []
+
+    @contextlib.contextmanager
+    def testPartExecutor(self, test_case):
+        old_success = self.success
+        self.success = True
+        try:
+            yield
+        except SkipTest as e:
+            self.success = False
+            self.skipped.append((test_case, str(e)))
+        except:
+            exc_info = sys.exc_info()
+            self.success = False
+            self.errors.append((test_case, exc_info))
+            # explicitly break a reference cycle:
+            # exc_info -> frame -> exc_info
+            exc_info = None
+        else:
+            if self.result_supports_subtests and self.success:
+                self.errors.append((test_case, None))
+        finally:
+            self.success = self.success and old_success
+
+
 class CaseParser:
     '''
     与数据库交互后的case进行处理
@@ -95,6 +131,9 @@ class CaseParser:
             self.__setattr__(k, v)
         self._initParamType()
         pass
+
+    def __call__(self, *args, **kwargs):
+        return self.run(*args, **kwargs)
 
     def _initParamType(self):
         # todo:当序列化器实现choices时，弃用
@@ -131,17 +170,42 @@ class CaseParser:
     def initDataSource(self):
 
         pass
+    def check_status(self):
+        self._checked=True
+        if not self.disabled:
+            raise SkipTest('Case is disabled')
+        if not self.fixed:
+            raise SkipTest('Case is fixed')
+        pass
+    def check_data(self):
+        dataConnect = self._initDataSourceConfig()
+        data = dataConnect.execute(self.runner)
+        if not data & self.creater:
+            data = dataConnect.execute(self.creater)
+        if not data:
+            raise SkipTest('init request data err')
 
     def before_run(self):
+        self.check_status()
+        self._initRequestsData()
+        testMethod=self._initRequestsMethods()
+        self.check_data()
+
+
         pass
 
-    def run(self,result=None):
-        self.before_run()
-        _method = self._requests()
+    def run(self, result=None):
+        _outCome = _Outcome(result)
+        with _outCome.testPartExecutor(self):
+            self.before_run()
 
         pass
 
+class Case:
+    def __init__(self,parser=None):
+    def check_status(self):
 
+    pass
 
 class ParamParser:
     # 状态管理模式??解析对象
@@ -173,11 +237,10 @@ class ParamParser:
         assert any((runner, script)), ValueError(
             'empty objects or scripts! runner like %s with script like %s' % (runner, script))
         from TestRunner.Connect import Connect
-        assert isinstance(runner,Connect),TypeError('Error Type of Runner:%s,must a Connect Object',type(runner))
+        assert isinstance(runner, Connect), TypeError('Error Type of Runner:%s,must a Connect Object', type(runner))
         self._runner_res = runner.execute(script)
-        [self.__setattr__(k,self._runner_res[k]) for k in (self._runner_res.keys() and self.__dict__.keys())]
+        [self.__setattr__(k, self._runner_res[k]) for k in (self._runner_res.keys() and self.__dict__.keys())]
         pass
-
 
 
 class Dict(dict):
@@ -205,6 +268,8 @@ if __name__ == '__main__':
     a_dict = ser.get('myCSRP')[0].get('data_source')
     b_dict = copy.deepcopy(a_dict)
     b_dict.get('datasource')['id'] = 2
+
+
     # ap = ParamParser(a_dict)
     # bp = ParamParser(b_dict)
     # cp = ParamParser(a_dict)
@@ -218,12 +283,14 @@ if __name__ == '__main__':
     # print('-----------------------------------')
     class a(ParamParser):
         def _run(self, runner=None, script=None):
-            self.csf='gaiwanle'
-    app=a(a_dict)
+            self.csf = 'gaiwanle'
+
+
+    app = a(a_dict)
     # print(app.csf)
     # app._run()
     # print(app.csf)
-    #-------------------------------------------
-    print(isinstance(app,a))
-    print(isinstance(app,ParamParser))
-    print(issubclass(a,ParamParser))
+    # -------------------------------------------
+    print(isinstance(app, a))
+    print(isinstance(app, ParamParser))
+    print(issubclass(a, ParamParser))
