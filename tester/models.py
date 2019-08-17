@@ -20,8 +20,8 @@ class Route(models.Model):
     '''
     路由的基础表
     '''
-    name = models.CharField(max_length=16, verbose_name='routeName')
-    route = models.CharField(max_length=50, verbose_name='route')
+    name = models.CharField(max_length=64, verbose_name='routeName')
+    route = models.CharField(max_length=128, verbose_name='route')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='myroute')
     pass
 
@@ -32,7 +32,7 @@ class RouteParams(models.Model):
     '''
 
     route = models.ForeignKey(Route, on_delete=models.CASCADE, verbose_name='所属路由', related_name='myrouteparams')
-    param = models.CharField(max_length=16, verbose_name='参数名')
+    param = models.CharField(max_length=64, verbose_name='参数名')
     data_type = models.CharField(max_length=1, choices=ROUTEPARAMS_TYPE_CHOICE, default=1, verbose_name='参数形式')
 
 
@@ -41,7 +41,7 @@ class RouteResponseGroup(models.Model):
     路由响应参数组----响应与路由的映射关系表
     '''
     route = models.ForeignKey(Route, on_delete=models.CASCADE, verbose_name='所属路由', related_name='myresponsegroup')
-    name = models.CharField(max_length=16, verbose_name='responseGroupName')
+    name = models.CharField(max_length=64, verbose_name='responseGroupName')
 
 
 class ResponseGroupParam(models.Model):
@@ -49,7 +49,7 @@ class ResponseGroupParam(models.Model):
     路由响应参数组----参数与响应的映射关系表
     '''
     Group = models.ForeignKey(RouteResponseGroup, on_delete=models.CASCADE, related_name='mygroupparams')
-    param = models.CharField(max_length=16, verbose_name='参数名')
+    param = models.CharField(max_length=64, verbose_name='参数名')
 
 
 # =====================================================================
@@ -61,10 +61,11 @@ class Case(models.Model):
     用例信息表
     '''
 
-    name = models.CharField(max_length=16, verbose_name='用例名')
+    name = models.CharField(max_length=64, verbose_name='用例名')
     req_method = models.CharField(max_length=6, choices=CASE_METHOD_CHOICE, default=CASE_METHOD_CHOICE[0])
     disabled = models.BooleanField(default=False)
     fixed = models.CharField(max_length=1, choices=CASE_STATUS_CHOICE, default=1)
+    route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name='mycase')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='mycase')
     createtime = models.DateTimeField(auto_now_add=True)
     createby = models.ForeignKey(user, null=True, on_delete=models.SET_NULL, related_name='casecreater')
@@ -108,7 +109,7 @@ class Task(models.Model):
     '''
     测试任务表
     '''
-    name = models.CharField(max_length=16, verbose_name='任务名称')
+    name = models.CharField(max_length=64, unique=True,verbose_name='任务名称')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='myTask', )
     env_config = models.ForeignKey(ProjectConfig, null=True, on_delete=models.SET_NULL, related_name='myTask')
     description = models.TextField(max_length=200, null=True, blank=True, verbose_name='任务简介')
@@ -126,3 +127,12 @@ class Task2Case(models.Model):
     update_by = models.ForeignKey(user, null=True, on_delete=models.SET_NULL, related_name='TaskIUpdatedSelf')
 
 # todo:任务执行流水表
+class Result(models.Model):
+    '''
+    测试执行结果表
+    '''
+    buildNumber=models.CharField(max_length=4,verbose_name='buildNumber')
+    task=models.ForeignKey(Task,on_delete=models.SET_NULL,null=True,related_name='myResult')
+    case=models.ForeignKey(Case,on_delete=models.SET_NULL,null=True,related_name='myResult')
+    result=models.CharField(max_length=8,verbose_name='success,skip,err,fail')
+    msg=models.TextField(null=True,blank=True,verbose_name='结果存储')

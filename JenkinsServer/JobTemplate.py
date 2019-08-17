@@ -24,20 +24,21 @@ CONFIG_XML = '''<?xml version='1.1' encoding='UTF-8'?>
   <buildWrappers/>
 </project>'''.format
 
+cmd_runner = '\TestRunner\manage.py'
+
 
 class JobConfig:
     # CONFIG_XML=
     description = r''
     run_time = r''
-    command_format = r'E:\Py2VirEnvs\testplatform\Scripts\python.exe C:/Users/Administrator/Documents/GitHub/testplatform/TestRunner/manage.py RunTask --task {Task_id}'.format
+    command_format = None
 
-    def __init__(self, description=None,run_time=None,command=None):
+    def __init__(self, description=None, run_time=None, task=None):
         self.set_run_time(run_time)
         self.set_description(description)
-        self.set_command(command)
+        self.set_command(task)
 
     def set_description(self, description):
-        assert type(description) is str, ('run_time is not authorized!')
         self.description = description if description is not None else self.description
 
     def set_run_time(self, run_time):
@@ -46,10 +47,19 @@ class JobConfig:
         assert type(run_time) is str, ('run_time is not authorized!')
         self.run_time = run_time
 
-    def set_command(self, command):
-        assert command is not None, ('not find \'command\' in request data')
-        assert type(command) is str, ('run_time is not authorized!')
-        self.command = self.command_format(command)
+    def set_command(self, task):
+        assert task is not None, ('not find \'command\' in request data')
+        import sys, os
+        blank = ' '
+        run_type = 'runtask --task'
+        run_env = sys.executable
+        runner = ''.join((os.path.dirname(os.path.dirname(__file__)), cmd_runner))
+        self.command = ''.join((run_env, blank, runner, blank, run_type, blank, str(task)))
 
     def __call__(self):
         return CONFIG_XML(description=self.description, run_time=self.run_time, command=self.command)
+
+
+if __name__ == '__main__':
+    import sys, os
+

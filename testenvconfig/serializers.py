@@ -18,7 +18,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 class ProjectConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectConfig
-        fields = '__all__'
+        exclude=['project']
 
 
 class U2PSerializer(serializers.ModelSerializer):

@@ -2,11 +2,11 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from drf_writable_nested import WritableNestedModelSerializer
 
-from dataconfigurator.serializers import SourceResultSerializer,SourceResultListSerializer
+from dataconfigurator.serializers import SourceResultSerializer, SourceResultListSerializer
 from .models import Route, RouteParams, RouteResponseGroup, ResponseGroupParam, Case, Case_Source_RouteParam, \
-    Case_Source_RouteResponse, Task, Task2Case
+    Case_Source_RouteResponse, Task, Task2Case, Result
 from testenvconfig.models import Project
-from testenvconfig.serializers import UserSerializer
+from testenvconfig.serializers import UserSerializer, ProjectConfigSerializer
 
 
 # ================================================================
@@ -57,6 +57,12 @@ class RouteResponseSerializer(WritableNestedModelSerializer):
         fields = ('id', 'name', 'mygroupparams')
         # todo:这里的验证怎么处理，联合唯一，使用WritableNested序列化器无法通过valid
         # validators = [UniqueTogetherValidator(queryset=RouteResponseGroup.objects.all(),fields=('route','name'),message='同一路由下响应组名称不能相同')]
+
+
+class RouteModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Route
+        fields = '__all__'
 
 
 class RouteListSerializer(serializers.ModelSerializer):
@@ -137,6 +143,7 @@ class CSRRListSerializer(WritableNestedModelSerializer):
 
 class CaseListSerializer(serializers.ModelSerializer):
     # req_method = serializers.CharField(source='get_req_method_display')
+    route = RouteModelSerializer()
     myCSRP = CSRPListSerializer(many=True)
     myCSRR = CSRRListSerializer(many=True)
     createby = UserSerializer()
@@ -156,6 +163,7 @@ class CaseSerializer(WritableNestedModelSerializer):
     class Meta:
         model = Case
         fields = '__all__'
+        validators=[UniqueTogetherValidator(queryset=Case.objects.all(),fields=('project','name'),message='Repeat Case Name in this project')]
 
 
 # ================================================================
@@ -165,7 +173,7 @@ class CaseSerializer(WritableNestedModelSerializer):
 class Task2CaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task2Case
-        fields = ('case', 'disabled')
+        fields = ('case',)
 
 
 class Task2CaseListSerializer(serializers.ModelSerializer):
@@ -180,6 +188,7 @@ class TaskSerializer(WritableNestedModelSerializer):
     class Meta:
         model = Task
         fields = '__all__'
+        validators=[UniqueTogetherValidator(queryset=Task.objects.all(),fields=('name','project'),message='Repeat Task in your project')]
     # def create(self, validated_data):
     #     print(validated_data)
     #     myCase=validated_data.pop()
@@ -187,7 +196,13 @@ class TaskSerializer(WritableNestedModelSerializer):
 
 class TaskListSerializer(serializers.ModelSerializer):
     myCase = Task2CaseListSerializer(many=True)
+    env_config = ProjectConfigSerializer()
 
     class Meta:
         model = Task
         fields = '__all__'
+
+class ResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Result
+        fields='__all__'

@@ -69,14 +69,15 @@ class TaskViewset(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         err_msg = None
+        # todo:在未确认jenkins任务创建正确的情况下，写入数据库，jenkins任务创建失败后数据库中将存在该task而并没有jenkins任务去执行该task，从而出现Task不能正确执行的BUG
         self.perform_create(serializer)
-        #创建jenkins服务
+        # 创建jenkins服务
         try:
-            description=None
+            description = None
             if 'description' in request.data.keys():
-                description=request.data.get('description')
-            job = JobConfig(description=description,run_time=request.data.get('run_time'),command=serializer.data.get('id'))
-            # server = jenkins.Jenkins(url='http://127.0.0.1:8080', username='lzd', password='19950223')
+                description = request.data.get('description')
+            job = JobConfig(description=description, run_time=request.data.get('run_time'),
+                            task=serializer.data.get('id'))
             server = Jenkins().CreateJenkinsServer()
             server.create_job(request.data.get('name'), job())
             server.quiet_down()

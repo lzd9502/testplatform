@@ -46,11 +46,11 @@ class ProjectConfig(models.Model):
     name = models.CharField(max_length=20, null=False, blank=False, verbose_name='配置名称')
     host = models.GenericIPAddressField(null=False, blank=False, verbose_name='服务端地址')
     port = models.CharField(max_length=10, null=True, blank=True, verbose_name='端口号')
-    projectid = models.ForeignKey(to=Project, to_field='id', on_delete=models.CASCADE, related_name='testconfig',
+    project = models.ForeignKey(to=Project, to_field='id', on_delete=models.CASCADE, related_name='testconfig',
                                   verbose_name='所属项目')
 
     def __str__(self):
-        return '<%s>==><%s>' % (self.name, self.projectid.name)
+        return '<%s>==><%s>' % (self.name, self.project.name)
 
 # class AutoTask(models.Model):
 # name = models.CharField(max_length=)
