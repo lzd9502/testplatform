@@ -207,5 +207,6 @@ print('写入task:')
 createTask = requests.post(url + '/task/', headers=headers, json=task_data).json()
 print(createTask)
 
-findTask=requests.get(url + '/task/10', headers=headers)
-print(findTask.json())
+if __name__ == '__main__':
+    findTask=requests.get(url + '/task/', headers=headers,params={'name':'Example Task'})
+    print(findTask.json())
