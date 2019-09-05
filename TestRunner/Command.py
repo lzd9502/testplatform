@@ -28,17 +28,11 @@ Available subcommands:
         self.subcmd_classes = subcmd_classes
         self.prog = os.path.basename(sys.argv[0])
 
-    def print_help(self):
-        """打印帮助文档
-        """
-        # logger.info(self.USAGE % {"ProgramName": self.prog,
-        #                           "SubcmdList": "\n".join(['\t%s' % it.name for it in self.subcmd_classes])})
-
     def parse_args(self, args):
         """解析参数
         """
         if len(args) < 1:
-            self.print_help()
+
             sys.exit(1)
 
         subcmd = args[0]
@@ -116,42 +110,6 @@ class RunCase(Command):
     name='runcase'
     def execute(self, args):
         pass
-
-
-# class ManagementToolsConsole(object):
-#     """管理工具交互模式
-#     """
-#     prompt = "QTA> "
-#
-#     def __init__(self, argparser):
-#         self._argparser = argparser
-#
-#     def cmdloop(self):
-#         logger.info("""QTAF %(qtaf_version)s (test project: %(proj_root)s [%(proj_mode)s mode])\n""" % {
-#             'qtaf_version': version,
-#             'proj_root': settings.PROJECT_ROOT,
-#             'proj_mode': settings.PROJECT_MODE,
-#         })
-#         if six.PY3:
-#             raw_input_func = input
-#         else:
-#             raw_input_func = raw_input
-#         while 1:
-#             line = raw_input_func(self.prompt)
-#             args = shlex.split(line, posix="win" not in sys.platform)
-#             if not args:
-#                 continue
-#             subcmd = args[0]
-#             if not self._argparser.get_subcommand(subcmd):
-#                 sys.stderr.write("invalid command: \"%s\"\n" % subcmd)
-#                 continue
-#             try:
-#                 subcmd, ns = self._argparser.parse_args(args)
-#                 subcmd.execute(ns)
-#             except SystemExit:
-#                 logger.info("command exit")
-#             except:
-#                 traceback.print_exc()
 
 class ManagementTools(object):
     """管理工具类入口
