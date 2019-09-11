@@ -5,7 +5,7 @@ from TestRunner.Case import Case
 from TestRunner.Result import BaseResult
 from TestRunner.Parser import TaskParser
 
-# 抄自Unittest.runner,重写write进行自动换行
+# Unittest.runner,重写write进行自动换行
 class _WritelnDecorator(object):
     """Used to decorate file-like objects with a handy 'writeln' method"""
 

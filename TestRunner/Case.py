@@ -168,10 +168,3 @@ class Case:
 
     def __call__(self, *args, **kwargs):
         return self.run(*args, **kwargs)
-
-
-if __name__ == '__main__':
-    a = {'a': 1, 'b': 2, 'c': 3, 'd': 4}
-    b = {'b': 1, 'c': 3, 'd': 4, 'e': 5}
-    z, x, c = compareDict(a, b)
-    print(z, '\n', x, '\n', c)

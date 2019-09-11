@@ -119,17 +119,3 @@ class ConnectFactory:
                 res=j()
                 break
         return res
-if __name__ == '__main__':
-    # db=DBConnect()
-    # db.connect(dbhost='127.0.0.1',dbport='1433',database='testdb',user='sa',password='19950223')
-    # res=db.execute('select * from dbo.test1table')
-    # print(res)
-    a=ConnectFactory()
-    z=a.getConnect(0)
-    z.connect()
-    res=z.execute('select name,project_id from tester_task WHERE name LIKE \'ExampleRightName%\' limit 1')
-    print(res)
-    # y=a.getConnect(1)
-    # y.connect()
-    # res=y.execute('ExampleRightName+time.time()')
-    # print(res,'\n',len(res))
